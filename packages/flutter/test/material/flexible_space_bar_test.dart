@@ -10,6 +10,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
+
 import '../widgets/semantics_tester.dart';
 
 void main() {
@@ -186,7 +187,7 @@ void main() {
               ),
               SliverList(
                 delegate: SliverChildListDelegate(
-                  <Widget>[
+                  children: <Widget>[
                     for (int i = 0; i < 50; i++)
                       SizedBox(
                         height: 200,
@@ -508,7 +509,7 @@ void main() {
               ),
               SliverList(
                 delegate: SliverChildListDelegate(
-                  <Widget>[
+                  children: <Widget>[
                     for (int i = 0; i < 3; i++)
                       SizedBox(
                         height: 200.0,
@@ -574,7 +575,7 @@ void main() {
               ),
               SliverList(
                 delegate: SliverChildListDelegate(
-                  <Widget>[
+                  children: <Widget>[
                     for (int i = 0; i < 3; i += 1)
                       SizedBox(
                         height: 200.0,
@@ -636,7 +637,7 @@ void main() {
               ),
               SliverList(
                 delegate: SliverChildListDelegate(
-                  <Widget>[
+                  children: <Widget>[
                     for (int i = 0; i < 3; i += 1)
                       SizedBox(
                         height: 200.0,

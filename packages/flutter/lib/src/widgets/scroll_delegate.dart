@@ -585,8 +585,8 @@ class SliverChildListDelegate extends SliverChildDelegate {
   ///
   /// If the order of children never changes, consider using the constant
   /// [SliverChildListDelegate.fixed] constructor.
-  SliverChildListDelegate(
-    this.children, {
+  SliverChildListDelegate({
+    required this.children,
     this.addAutomaticKeepAlives = true,
     this.addRepaintBoundaries = true,
     this.addSemanticIndexes = true,
@@ -603,8 +603,8 @@ class SliverChildListDelegate extends SliverChildDelegate {
   /// The [children], [addAutomaticKeepAlives], [addRepaintBoundaries],
   /// [addSemanticIndexes], and [semanticIndexCallback] arguments must not be
   /// null.
-  const SliverChildListDelegate.fixed(
-    this.children, {
+  const SliverChildListDelegate.fixed({
+    required this.children,
     this.addAutomaticKeepAlives = true,
     this.addRepaintBoundaries = true,
     this.addSemanticIndexes = true,

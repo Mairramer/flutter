@@ -852,7 +852,7 @@ void main() {
                 ),
                 SliverList(
                   delegate: SliverChildListDelegate(
-                    <Widget>[
+                    children: <Widget>[
                       Container(height: contentHeight, color: Colors.teal),
                     ],
                   ),
@@ -2076,7 +2076,7 @@ void main() {
                   ),
                   SliverList(
                     delegate: SliverChildListDelegate(
-                      <Widget>[
+                      children: <Widget>[
                         Container(height: 1200.0, color: Colors.teal),
                       ],
                     ),

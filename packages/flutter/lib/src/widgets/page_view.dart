@@ -671,7 +671,7 @@ class PageView extends StatefulWidget {
     this.hitTestBehavior = HitTestBehavior.opaque,
     this.scrollBehavior,
     this.padEnds = true,
-  }) : childrenDelegate = SliverChildListDelegate(children);
+  }) : childrenDelegate = SliverChildListDelegate(children: children);
 
   /// Creates a scrollable list that works page by page using widgets that are
   /// created on demand.

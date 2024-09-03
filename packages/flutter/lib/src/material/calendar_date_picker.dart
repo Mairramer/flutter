@@ -1031,7 +1031,7 @@ class _DayPickerState extends State<_DayPicker> {
           physics: const ClampingScrollPhysics(),
           gridDelegate: _DayPickerGridDelegate(context),
           childrenDelegate: SliverChildListDelegate(
-            dayItems,
+            children: dayItems,
             addRepaintBoundaries: false,
           ),
         ),

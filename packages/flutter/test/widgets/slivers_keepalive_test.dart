@@ -492,7 +492,7 @@ class SwitchingChildListTest extends StatelessWidget {
             slivers: <Widget>[
               SliverFillViewport(
                 viewportFraction: viewportFraction,
-                delegate: SliverChildListDelegate(children),
+                delegate: SliverChildListDelegate(children: children),
               ),
             ],
           ),
@@ -521,7 +521,7 @@ class SwitchingSliverListTest extends StatelessWidget {
             cacheExtent: 0,
             slivers: <Widget>[
               SliverList(
-                delegate: SliverChildListDelegate(children),
+                delegate: SliverChildListDelegate(children: children),
               ),
             ],
           ),

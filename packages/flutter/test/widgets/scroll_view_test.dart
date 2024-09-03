@@ -935,7 +935,7 @@ void main() {
           slivers: <Widget>[
             SliverList(
               delegate: SliverChildListDelegate(
-                kStates.map<Widget>((String state) {
+                children: kStates.map<Widget>((String state) {
                   return GestureDetector(
                     dragStartBehavior: DragStartBehavior.down,
                     onTap: () {
@@ -987,7 +987,7 @@ void main() {
         slivers: <Widget>[
           SliverList(
             delegate: SliverChildListDelegate(
-              focusNodes.map((FocusNode focusNode) {
+              children: focusNodes.map((FocusNode focusNode) {
                 return Container(
                   height: 50,
                   color: Colors.green,

@@ -1,0 +1,63 @@
+# Copyright 2024 The Flutter Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# For details regarding the *Flutter Fix* feature, see
+# https://flutter.dev/to/flutter-fix
+
+# Please add new fixes to the top of the file, separated by one blank line
+# from other fixes. In a comment, include a link to the PR where the change
+# requiring the fix was made.
+
+# Every fix must be tested. See the flutter/packages/flutter/test_fixes/README.md
+# file for instructions on testing these data driven fixes.
+
+# For documentation about this file format, see
+# https://dart.dev/go/data-driven-fixes.
+
+# * Fixes in this file are for SliverChildListDelegate from the widgets library. *
+version: 1
+transforms:
+  # Change made in https://github.com/flutter/flutter/pull/XXXXXX
+  - title: "Migrate 'children' argument to named"
+    date: 2024-09-02
+    element:
+      uris: [ 'widgets.dart' ]
+      constructor: ''
+      inClass: 'SliverChildListDelegate'
+    variables:
+      children:
+        kind: 'fragment'
+        value: 'arguments[0]'
+    changes:
+      - kind: 'addParameter'
+        index: 0
+        name: 'children'
+        style: required_named
+        argumentValue:
+          expression: '{% children %}'
+      - kind: 'removeParameter'
+        index: 0
+
+  # Change made in https://github.com/flutter/flutter/pull/XXXXXX
+  - title: "Migrate 'children' argument to named"
+    date: 2024-09-02
+    element:
+      uris: [ 'widgets.dart' ]
+      constructor: 'fixed'
+      inClass: 'SliverChildListDelegate'
+    variables:
+      children:
+        kind: 'fragment'
+        value: 'arguments[0]'
+    changes:
+      - kind: 'addParameter'
+        index: 0
+        name: 'children'
+        style: required_named
+        argumentValue:
+          expression: '{% children %}'
+      - kind: 'removeParameter'
+        index: 0
+
+# Before adding a new fix: read instructions at the top of this file.

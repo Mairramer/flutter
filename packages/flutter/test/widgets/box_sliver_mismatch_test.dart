@@ -15,7 +15,7 @@ void main() {
       DecoratedBox(
         decoration: const BoxDecoration(),
         child: SliverList(
-          delegate: SliverChildListDelegate(const <Widget>[]),
+          delegate: SliverChildListDelegate(children: const <Widget>[]),
         ),
       ),
     );
@@ -26,7 +26,7 @@ void main() {
       Row(
         children: <Widget>[
           SliverList(
-            delegate: SliverChildListDelegate(const <Widget>[]),
+            delegate: SliverChildListDelegate(children: const <Widget>[]),
           ),
         ],
       ),

@@ -255,7 +255,7 @@ void main() {
             const SliverAppBar(primary: false, pinned: true, title: Text('B')),
             SliverList(
               delegate: SliverChildListDelegate(
-                const <Widget>[
+                children: const <Widget>[
                   Text('C'),
                   Text('D'),
                   SizedBox(height: 500.0),
@@ -315,7 +315,7 @@ void main() {
                   expandedHeight: 120.0,
                 ),
                 SliverList(
-                  delegate: SliverChildListDelegate(List<Widget>.generate(20, (int i) {
+                  delegate: SliverChildListDelegate(children: List<Widget>.generate(20, (int i) {
                     return SizedBox(
                       height: 100.0,
                       child: Text('Tile $i'),

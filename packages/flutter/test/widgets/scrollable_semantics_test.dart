@@ -123,7 +123,7 @@ void main() {
                     ),
                   ),
                   SliverList(
-                    delegate: SliverChildListDelegate(containers),
+                    delegate: SliverChildListDelegate(children: containers),
                   ),
                 ],
               );

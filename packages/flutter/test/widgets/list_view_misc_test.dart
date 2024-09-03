@@ -129,7 +129,7 @@ void main() {
   });
 
   testWidgets('SliverBlockChildListDelegate.estimateMaxScrollOffset hits end', (WidgetTester tester) async {
-    final SliverChildListDelegate delegate = SliverChildListDelegate(<Widget>[
+    final SliverChildListDelegate delegate = SliverChildListDelegate(children: <Widget>[
       Container(),
       Container(),
       Container(),

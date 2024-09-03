@@ -57,7 +57,7 @@ class FlexibleSpaceBarExampleApp extends StatelessWidget {
           ),
           SliverList(
             delegate: SliverChildListDelegate(
-              const <Widget>[
+              children: const <Widget>[
                 ListTile(
                   leading: Icon(Icons.wb_sunny),
                   title: Text('Sunday'),

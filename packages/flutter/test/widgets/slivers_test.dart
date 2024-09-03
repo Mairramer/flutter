@@ -162,7 +162,7 @@ void main() {
               slivers: <Widget>[
                 SliverList(
                   delegate: SliverChildListDelegate(
-                    const <Widget>[
+                    children: const <Widget>[
                       SizedBox(height: 22.2, child: Text('TOP')),
                       SizedBox(height: 22.2),
                       SizedBox(height: 22.2),
@@ -172,7 +172,7 @@ void main() {
                 SliverFixedExtentList(
                   itemExtent: 22.2,
                   delegate: SliverChildListDelegate(
-                    const <Widget>[
+                    children: const <Widget>[
                       SizedBox(),
                       Text('A'),
                       SizedBox(),
@@ -184,7 +184,7 @@ void main() {
                     crossAxisCount: 2,
                   ),
                   delegate: SliverChildListDelegate(
-                    const <Widget>[
+                    children: const <Widget>[
                       SizedBox(),
                       Text('B'),
                       SizedBox(),
@@ -193,7 +193,7 @@ void main() {
                 ),
                 SliverList(
                   delegate: SliverChildListDelegate(
-                    const <Widget>[
+                    children: const <Widget>[
                       SizedBox(height: 22.2),
                       SizedBox(height: 22.2),
                       SizedBox(height: 22.2, child: Text('BOTTOM')),
@@ -353,7 +353,7 @@ void main() {
           slivers: <Widget>[
             SliverFixedExtentList(
               itemExtent: 900,
-              delegate: SliverChildListDelegate(children),
+              delegate: SliverChildListDelegate(children: children),
             ),
           ],
         ),
@@ -382,7 +382,7 @@ void main() {
           slivers: <Widget>[
             SliverFixedExtentList(
               itemExtent: 900,
-              delegate: SliverChildListDelegate(children),
+              delegate: SliverChildListDelegate(children: children),
             ),
           ],
         ),
@@ -450,7 +450,7 @@ void main() {
                       mainAxisSpacing: 8,
                     ),
                     delegate: SliverChildListDelegate(
-                      <Widget>[
+                      children: <Widget>[
                         const Center(child: Text('A')),
                         const Center(child: Text('B')),
                         const Center(child: Text('C')),
@@ -1007,7 +1007,7 @@ void main() {
           slivers: <Widget>[
             SliverList(
               delegate: SliverChildListDelegate(
-                const <Widget>[
+                children: const <Widget>[
                   SizedBox.shrink(),
                   Text('index 1'),
                   Text('index 2'),
@@ -1447,7 +1447,7 @@ class TestSliverGrid extends StatelessWidget {
         slivers: <Widget> [
           SliverGrid(
             delegate: SliverChildListDelegate(
-              children,
+              children: children,
             ),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
@@ -1506,7 +1506,7 @@ class TestSliverFixedExtentList extends StatelessWidget {
             SliverFixedExtentList(
               itemExtent: 10.0,
               delegate: SliverChildListDelegate(
-                children,
+                children: children,
               ),
             ),
           ],

@@ -338,7 +338,7 @@ class SliverList extends SliverMultiBoxAdaptorWidget {
     bool addRepaintBoundaries = true,
     bool addSemanticIndexes = true,
   }) : super(delegate: SliverChildListDelegate(
-         children,
+         children: children,
          addAutomaticKeepAlives: addAutomaticKeepAlives,
          addRepaintBoundaries: addRepaintBoundaries,
          addSemanticIndexes: addSemanticIndexes,
@@ -515,7 +515,7 @@ class SliverFixedExtentList extends SliverMultiBoxAdaptorWidget {
     bool addRepaintBoundaries = true,
     bool addSemanticIndexes = true,
   }) : super(delegate: SliverChildListDelegate(
-         children,
+         children: children,
          addAutomaticKeepAlives: addAutomaticKeepAlives,
          addRepaintBoundaries: addRepaintBoundaries,
          addSemanticIndexes: addSemanticIndexes,
@@ -619,7 +619,7 @@ class SliverVariedExtentList extends SliverMultiBoxAdaptorWidget {
     bool addRepaintBoundaries = true,
     bool addSemanticIndexes = true,
   }) : super(delegate: SliverChildListDelegate(
-    children,
+    children: children,
     addAutomaticKeepAlives: addAutomaticKeepAlives,
     addRepaintBoundaries: addRepaintBoundaries,
     addSemanticIndexes: addSemanticIndexes,
@@ -766,7 +766,7 @@ class SliverGrid extends SliverMultiBoxAdaptorWidget {
          crossAxisSpacing: crossAxisSpacing,
          childAspectRatio: childAspectRatio,
        ),
-       super(delegate: SliverChildListDelegate(children));
+       super(delegate: SliverChildListDelegate(children: children));
 
   /// Creates a sliver that places multiple box children in a two dimensional
   /// arrangement with tiles that each have a maximum cross-axis extent.
@@ -790,7 +790,7 @@ class SliverGrid extends SliverMultiBoxAdaptorWidget {
          crossAxisSpacing: crossAxisSpacing,
          childAspectRatio: childAspectRatio,
        ),
-       super(delegate: SliverChildListDelegate(children));
+       super(delegate: SliverChildListDelegate(children: children));
 
   /// The delegate that controls the size and position of the children.
   final SliverGridDelegate gridDelegate;

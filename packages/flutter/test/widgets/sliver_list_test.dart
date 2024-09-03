@@ -359,7 +359,7 @@ Widget _buildSliverListRenderWidgetChild(List<String> items, ScrollController co
             slivers: <Widget>[
               SliverList(
                 delegate: SliverChildListDelegate(
-                  items.map<Widget>((String item) {
+                  children: items.map<Widget>((String item) {
                     return Chip(
                       key: Key(item),
                       label: Text('Tile $item'),

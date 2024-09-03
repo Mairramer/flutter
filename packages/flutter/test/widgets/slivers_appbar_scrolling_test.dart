@@ -83,7 +83,7 @@ void main() {
           slivers: <Widget>[
             SliverPersistentHeader(delegate: TestDelegate()),
             SliverList(
-              delegate: SliverChildListDelegate(<Widget>[
+              delegate: SliverChildListDelegate(children: <Widget>[
                 const SizedBox(
                   height: 300.0,
                   child: Text('X'),
@@ -115,7 +115,7 @@ void main() {
           slivers: <Widget>[
             SliverPersistentHeader(delegate: TestDelegate()),
             const SliverList(
-              delegate: SliverChildListDelegate.fixed(<Widget>[
+              delegate: SliverChildListDelegate.fixed(children: <Widget>[
                 SizedBox(
                   height: 300.0,
                   child: Text('X'),
@@ -152,7 +152,7 @@ void main() {
                 slivers: <Widget>[
                   SliverPersistentHeader(delegate: TestDelegate()),
                   const SliverList(
-                    delegate: SliverChildListDelegate.fixed(<Widget>[
+                    delegate: SliverChildListDelegate.fixed(children: <Widget>[
                       SizedBox(
                         height: 300.0,
                         child: Text('X'),

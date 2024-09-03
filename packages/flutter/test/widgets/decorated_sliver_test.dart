@@ -134,7 +134,7 @@ void main() {
                 sliver: SliverPadding(
                   padding: const EdgeInsets.all(16),
                   sliver: SliverList(
-                    delegate: SliverChildListDelegate.fixed(<Widget>[
+                    delegate: SliverChildListDelegate.fixed(children: <Widget>[
                       Container(
                         height: 100,
                         color: Colors.red,
@@ -172,7 +172,7 @@ void main() {
                 sliver: SliverPadding(
                   padding: const EdgeInsets.all(16),
                   sliver: SliverList(
-                    delegate: SliverChildListDelegate.fixed(<Widget>[
+                    delegate: SliverChildListDelegate.fixed(children: <Widget>[
                       Container(
                         height: 100,
                         color: Colors.red,

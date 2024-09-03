@@ -54,7 +54,7 @@ void _tests() {
                     title: Text('Semantics Test with Slivers'),
                   ),
                   SliverList(
-                    delegate: SliverChildListDelegate(listChildren),
+                    delegate: SliverChildListDelegate(children: listChildren),
                   ),
                 ],
               ),
@@ -486,7 +486,7 @@ void _tests() {
                   title: Text('AppBar'),
                 ),
                 SliverList(
-                  delegate: SliverChildListDelegate(listChildren),
+                  delegate: SliverChildListDelegate(children: listChildren),
                 ),
               ],
               controller: controller,
@@ -711,7 +711,7 @@ void _tests() {
                   title: Text('AppBar'),
                 ),
                 SliverList(
-                  delegate: SliverChildListDelegate(listChildren),
+                  delegate: SliverChildListDelegate(children: listChildren),
                 ),
               ],
               controller: controller,
@@ -947,7 +947,7 @@ void _tests() {
                   center: forwardAppBarKey,
                   slivers: <Widget>[
                     SliverList(
-                      delegate: SliverChildListDelegate(backwardChildren),
+                      delegate: SliverChildListDelegate(children: backwardChildren),
                     ),
                     const SliverAppBar(
                       pinned: true,
@@ -965,7 +965,7 @@ void _tests() {
                       ),
                     ),
                     SliverList(
-                      delegate: SliverChildListDelegate(forwardChildren),
+                      delegate: SliverChildListDelegate(children: forwardChildren),
                     ),
                   ],
                 );

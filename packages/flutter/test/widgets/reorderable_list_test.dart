@@ -294,7 +294,7 @@ void main() {
             slivers: <Widget>[
               SliverFixedExtentList(
                 itemExtent: 50.0,
-                delegate: SliverChildListDelegate(<Widget>[
+                delegate: SliverChildListDelegate(children: <Widget>[
                   const Text('before'),
                 ]),
               ),
@@ -317,7 +317,7 @@ void main() {
               ),
               SliverFixedExtentList(
                 itemExtent: 50.0,
-                delegate: SliverChildListDelegate(<Widget>[
+                delegate: SliverChildListDelegate(children: <Widget>[
                   const Text('after'),
                 ]),
               ),

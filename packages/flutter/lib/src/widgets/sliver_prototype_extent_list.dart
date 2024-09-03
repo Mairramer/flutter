@@ -146,7 +146,7 @@ class SliverPrototypeExtentList extends SliverMultiBoxAdaptorWidget {
     bool addRepaintBoundaries = true,
     bool addSemanticIndexes = true,
   }) : super(delegate: SliverChildListDelegate(
-         children,
+         children: children,
          addAutomaticKeepAlives: addAutomaticKeepAlives,
          addRepaintBoundaries: addRepaintBoundaries,
          addSemanticIndexes: addSemanticIndexes,

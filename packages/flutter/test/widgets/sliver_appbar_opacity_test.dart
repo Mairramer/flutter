@@ -310,7 +310,7 @@ class _TestWidget extends StatelessWidget {
             ),
           ),
           SliverList(
-            delegate: SliverChildListDelegate(List<Widget>.generate(20, (int i) {
+            delegate: SliverChildListDelegate(children: List<Widget>.generate(20, (int i) {
               return SizedBox(
                 height: 100.0,
                 child: Text('Tile $i'),

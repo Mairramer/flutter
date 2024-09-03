@@ -445,7 +445,7 @@ void main() {
           child: CustomScrollView(
             slivers: <Widget>[
               SliverList(
-                delegate: SliverChildListDelegate(<Widget>[
+                delegate: SliverChildListDelegate(children: <Widget>[
                   const SizedBox(height: 100),
                   const SizedBox(height: 100),
                 ]),

@@ -45,7 +45,7 @@ void main() {
               semanticChildCount: 30,
               slivers: <Widget>[
                 SliverList(
-                  delegate: SliverChildListDelegate(listChildren),
+                  delegate: SliverChildListDelegate(children: listChildren),
                 ),
               ],
             ),
@@ -221,7 +221,7 @@ void main() {
               slivers: <Widget>[
                 SliverFixedExtentList(
                   itemExtent: 200.0,
-                  delegate: SliverChildListDelegate(listChildren, addSemanticIndexes: false),
+                  delegate: SliverChildListDelegate(children: listChildren, addSemanticIndexes: false),
                 ),
               ],
             ),

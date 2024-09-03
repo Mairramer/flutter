@@ -16,7 +16,7 @@ void main() {
           slivers: <Widget>[
             SliverList(
               delegate: SliverChildListDelegate(
-                List<Widget>.generate(
+                children: List<Widget>.generate(
                   50,
                   (int index) => SizedBox(
                     height: 50,
@@ -96,7 +96,7 @@ void main() {
           restorationId: 'list',
           cacheExtent: 0,
           childrenDelegate: SliverChildListDelegate(
-            List<Widget>.generate(
+            children: List<Widget>.generate(
               50,
               (int index) => SizedBox(
                 height: 50,
@@ -158,7 +158,7 @@ void main() {
           cacheExtent: 0,
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 1),
           childrenDelegate: SliverChildListDelegate(
-            List<Widget>.generate(
+            children: List<Widget>.generate(
               50,
               (int index) => SizedBox(
                 height: 50,
@@ -301,7 +301,7 @@ void main() {
         child: PageView.custom(
           restorationId: 'pager',
           childrenDelegate: SliverChildListDelegate(
-            List<Widget>.generate(
+            children: List<Widget>.generate(
               50,
               (int index) => SizedBox(
                 height: 50,

@@ -180,7 +180,7 @@ class ContactsDemoState extends State<ContactsDemo> {
               ),
             ),
             SliverList(
-              delegate: SliverChildListDelegate(<Widget>[
+              delegate: SliverChildListDelegate(children: <Widget>[
                 AnnotatedRegion<SystemUiOverlayStyle>(
                   value: SystemUiOverlayStyle.dark,
                   child: _ContactCategory(

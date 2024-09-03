@@ -18,7 +18,7 @@ void main() {
         child: CustomScrollView(
           slivers: <Widget>[
             SliverFillViewport(
-              delegate: SliverChildListDelegate(children, addAutomaticKeepAlives: false, addSemanticIndexes: false),
+              delegate: SliverChildListDelegate(children: children, addAutomaticKeepAlives: false, addSemanticIndexes: false),
             ),
           ],
         ),
@@ -160,7 +160,7 @@ void main() {
 
   testWidgets('SliverFillViewport padding test', (WidgetTester tester) async {
     final SliverChildListDelegate delegate = SliverChildListDelegate(
-      <Widget>[
+      children: <Widget>[
         const Text('0'),
       ],
       addAutomaticKeepAlives: false,

@@ -1049,7 +1049,7 @@ void main() {
             controller: scrollController,
             slivers: <Widget>[
               SliverList(
-                delegate: SliverChildListDelegate(<Widget>[
+                delegate: SliverChildListDelegate(children: <Widget>[
                   Text('child', key: GlobalKey()),
                 ]),
               ),

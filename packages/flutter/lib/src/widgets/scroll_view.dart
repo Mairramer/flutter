@@ -1263,7 +1263,7 @@ class ListView extends BoxScrollView {
          'You can only pass one of itemExtent, prototypeItem and itemExtentBuilder.',
        ),
        childrenDelegate = SliverChildListDelegate(
-         children,
+         children: children,
          addAutomaticKeepAlives: addAutomaticKeepAlives,
          addRepaintBoundaries: addRepaintBoundaries,
          addSemanticIndexes: addSemanticIndexes,
@@ -1877,7 +1877,7 @@ class GridView extends BoxScrollView {
     super.restorationId,
     super.hitTestBehavior,
   }) : childrenDelegate = SliverChildListDelegate(
-         children,
+         children: children,
          addAutomaticKeepAlives: addAutomaticKeepAlives,
          addRepaintBoundaries: addRepaintBoundaries,
          addSemanticIndexes: addSemanticIndexes,
@@ -2015,7 +2015,7 @@ class GridView extends BoxScrollView {
          childAspectRatio: childAspectRatio,
        ),
        childrenDelegate = SliverChildListDelegate(
-         children,
+         children: children,
          addAutomaticKeepAlives: addAutomaticKeepAlives,
          addRepaintBoundaries: addRepaintBoundaries,
          addSemanticIndexes: addSemanticIndexes,
@@ -2069,7 +2069,7 @@ class GridView extends BoxScrollView {
          childAspectRatio: childAspectRatio,
        ),
        childrenDelegate = SliverChildListDelegate(
-         children,
+         children: children,
          addAutomaticKeepAlives: addAutomaticKeepAlives,
          addRepaintBoundaries: addRepaintBoundaries,
          addSemanticIndexes: addSemanticIndexes,

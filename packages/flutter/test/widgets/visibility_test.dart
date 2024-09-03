@@ -468,7 +468,7 @@ void main() {
               sliver: SliverList(
               delegate: SliverChildListDelegate.fixed(
                 addRepaintBoundaries: false,
-                <Widget>[
+                children: <Widget>[
                   Text('hello'),
                 ],
               ),

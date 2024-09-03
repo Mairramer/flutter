@@ -51,7 +51,7 @@ class _SliverOpacityExampleState extends State<SliverOpacityExample> {
           SliverOpacity(
             opacity: _visible ? 1.0 : 0.0,
             sliver: SliverList(
-              delegate: SliverChildListDelegate(_listItems),
+              delegate: SliverChildListDelegate(children: _listItems),
             ),
           ),
           const SliverToBoxAdapter(

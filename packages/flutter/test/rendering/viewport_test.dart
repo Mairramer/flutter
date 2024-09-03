@@ -823,7 +823,7 @@ void main() {
             slivers: <Widget>[
               SliverList(
                 delegate: SliverChildListDelegate(
-                  List<Widget>.generate(
+                  children: List<Widget>.generate(
                     10,
                         (int index) => SizedBox(
                       height: itemHeight,
@@ -835,7 +835,7 @@ void main() {
               SliverList(
                 key: centerKey,
                 delegate: SliverChildListDelegate(
-                  List<Widget>.generate(
+                  children: List<Widget>.generate(
                     1,
                         (int index) => const SizedBox(
                       height: itemHeight,
@@ -846,7 +846,7 @@ void main() {
               ),
               SliverList(
                 delegate: SliverChildListDelegate(
-                  List<Widget>.generate(
+                  children: List<Widget>.generate(
                     10,
                     (int index) => SizedBox(
                       height: itemHeight,

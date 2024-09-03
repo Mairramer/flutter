@@ -2276,7 +2276,7 @@ class _DayHeaders extends StatelessWidget {
         shrinkWrap: true,
         gridDelegate: _monthItemGridDelegate,
         childrenDelegate: SliverChildListDelegate(
-          labels,
+          children: labels,
           addRepaintBoundaries: false,
         ),
       ),
@@ -2642,7 +2642,7 @@ class _MonthItemState extends State<_MonthItem> {
             physics: const NeverScrollableScrollPhysics(),
             gridDelegate: _monthItemGridDelegate,
             childrenDelegate: SliverChildListDelegate(
-              paddedDayItems,
+              children: paddedDayItems,
               addRepaintBoundaries: false,
             ),
           ),

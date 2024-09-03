@@ -10,7 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 import '../rendering/rendering_tester.dart' show TestClipPaintingContext;
 
 class TestSliverChildListDelegate extends SliverChildListDelegate {
-  TestSliverChildListDelegate(super.children);
+  TestSliverChildListDelegate({required super.children});
 
   final List<String> log = <String>[];
 
@@ -442,7 +442,7 @@ void main() {
 
   testWidgets('didFinishLayout has correct indices', (WidgetTester tester) async {
     final TestSliverChildListDelegate delegate = TestSliverChildListDelegate(
-      List<Widget>.generate(
+      children: List<Widget>.generate(
         20,
         (int i) {
           return Text('$i', textDirection: TextDirection.ltr);

@@ -50,7 +50,7 @@ class SliverDecorationExample extends StatelessWidget {
           ),
           sliver: SliverList(
             delegate: SliverChildListDelegate(
-              <Widget>[
+              children: <Widget>[
                 SizedBox(
                   height: 200.0,
                   child: Center(
@@ -84,7 +84,7 @@ class SliverDecorationExample extends StatelessWidget {
           ),
           sliver: SliverList(
             delegate: SliverChildListDelegate(
-              <Widget>[
+              children: <Widget>[
                 SizedBox(
                   height: 500.0,
                   child: Container(
