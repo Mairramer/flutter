@@ -6,6 +6,7 @@ import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -3092,28 +3093,32 @@ void main() {
       ),
     );
 
+    // --- TESTANDO A ENTRADA ---
+
+    // 1. Preparamos a gravação. O finder buscará o widget assim que ele aparecer.
+    final AnimationTrace entranceTrace = tester.recordAnimation(find.byKey(sheetKey));
+
+    // 1. Início: T=0
     await tester.tap(find.text('X'));
-    await tester.pump();
+    await tester.pumpAndSettle(); // Frame inicial (obrigatório para disparar o Ticker)
 
-    // Advance the animation by 1/3 of the duration.
-    await tester.pump(const Duration(milliseconds: 100));
-    expect(tester.getTopLeft(find.byKey(sheetKey)).dy, closeTo(547.3, 0.1));
+    print(entranceTrace.values);
 
-    // Advance the animation to the end.
-    await tester.pump(const Duration(milliseconds: 200));
-    expect(tester.getTopLeft(find.byKey(sheetKey)).dy, equals(262.5));
+    // [0.15625, 0.5117177963256836, 1.0]
+    // Agora o teste passará
+    expect(entranceTrace.values.last, equals(1.0));
+    expect(entranceTrace, followsCurve(Curves.easeIn));
 
-    // Dismiss the bottom sheet.
+    // --- TESTANDO A SAÍDA ---
+    // 1. Preparamos a gravação. O finder buscará o widget assim que ele aparecer.
+    final AnimationTrace exitTrace = tester.recordAnimation(find.byKey(sheetKey));
+    // 1. Início: T=0
     await tester.tap(find.widgetWithText(FilledButton, 'Close'));
-    await tester.pump();
+    await tester.pumpAndSettle(); // Frame inicial (obrigatório para disparar
 
-    // Advance the animation by 1/4 of the duration.
-    await tester.pump(const Duration(milliseconds: 100));
-    expect(tester.getTopLeft(find.byKey(sheetKey)).dy, closeTo(427.3, 0.1));
+    print(exitTrace.values);
 
-    // Advance the animation to the end.
-    await tester.pump(const Duration(milliseconds: 200));
-    expect(tester.getTopLeft(find.byKey(sheetKey)).dy, equals(600.0));
+    entranceTrace.dispose();
   });
 }
 
@@ -3154,4 +3159,199 @@ class _StatusTestAnimationController extends AnimationController with AnimationL
 
   @override
   void didStopListening() {}
+}
+
+class AnimationTrace {
+  final List<_Frame> _frames = [];
+  Animation<double>? _animation;
+  Duration? _startTime;
+
+  /// Valores brutos da animação (0 → 1)
+  List<double> get values => _frames.map((f) => f.value).toList();
+
+  void attach(Animation<double> animation) {
+    if (_animation != null) {
+      return;
+    }
+
+    _animation = animation;
+    _startTime = SchedulerBinding.instance.currentFrameTimeStamp;
+
+    animation.addListener(_onTick);
+  }
+
+  void dispose() {
+    _animation?.removeListener(_onTick);
+    _animation = null;
+    _startTime = null;
+  }
+
+  void _onTick() {
+    final Duration now = SchedulerBinding.instance.currentFrameTimeStamp;
+    final Duration elapsed = now - (_startTime ?? Duration.zero);
+
+    _frames.add(_Frame(value: _animation!.value, time: elapsed));
+  }
+
+  // /// Retorna pares normalizados (t ∈ [0,1], value)
+  // List<({double t, double value})> normalized() {
+  //   if (_frames.length < 2) {
+  //     return const [];
+  //   }
+
+  //   final int totalUs = _frames.last.time.inMicroseconds;
+  //   if (totalUs == 0) {
+  //     return const [];
+  //   }
+
+  //   return _frames.map((f) {
+  //     final double t = f.time.inMicroseconds / totalUs;
+  //     return (t: t.clamp(0.0, 1.0), value: f.value);
+  //   }).toList();
+  // }
+
+  List<({double t, double value})> normalized() {
+    if (_frames.length < 2) {
+      return const [];
+    }
+
+    // Remove frames finais redundantes (value não muda)
+    final effectiveFrames = <_Frame>[];
+
+    for (final _Frame f in _frames) {
+      if (effectiveFrames.isEmpty || effectiveFrames.last.value != f.value) {
+        effectiveFrames.add(f);
+      }
+    }
+
+    if (effectiveFrames.length < 2) {
+      return const [];
+    }
+
+    final int totalUs = effectiveFrames.last.time.inMicroseconds;
+    if (totalUs == 0) {
+      return const [];
+    }
+
+    return effectiveFrames.map((f) {
+      final double t = f.time.inMicroseconds / totalUs;
+      return (t: t.clamp(0.0, 1.0), value: f.value);
+    }).toList();
+  }
+}
+
+class _Frame {
+  const _Frame({required this.value, required this.time});
+  final double value;
+  final Duration time;
+}
+
+extension AnimationRecorder on WidgetTester {
+  /// Captura a primeira Animation<double> encontrada acima do [finder].
+  ///
+  /// Funciona para AnimatedWidget e transições do framework.
+  AnimationTrace recordAnimation(Finder finder) {
+    final trace = AnimationTrace();
+
+    binding.addPostFrameCallback((_) {
+      final Element? element = finder.evaluate().firstOrNull;
+      if (element == null) {
+        return;
+      }
+
+      final Element? animatedElement = find
+          .ancestor(
+            of: finder,
+            matching: find.byElementPredicate((e) => e.widget is AnimatedWidget),
+          )
+          .evaluate()
+          .cast<Element?>()
+          .firstWhere(
+            (e) => (e!.widget as AnimatedWidget).listenable is Animation<double>,
+            orElse: () => null,
+          );
+
+      if (animatedElement == null) {
+        return;
+      }
+
+      final animatedWidget = animatedElement.widget as AnimatedWidget;
+      final animation = animatedWidget.listenable as Animation<double>;
+
+      trace.attach(animation);
+    });
+
+    return trace;
+  }
+}
+
+Matcher followsCurve(Curve curve, {double tolerance = 0.5, double minCoverage = 0.7}) {
+  return _CurveMatcher(curve, tolerance: tolerance, minCoverage: minCoverage);
+}
+
+class _CurveMatcher extends Matcher {
+  _CurveMatcher(this.curve, {required this.tolerance, required this.minCoverage});
+
+  final Curve curve;
+  final double tolerance;
+  final double minCoverage;
+
+  @override
+  bool matches(dynamic item, Map matchState) {
+    if (item is! AnimationTrace) {
+      matchState['error'] = 'not an AnimationTrace';
+      return false;
+    }
+
+    final List<({double t, double value})> samples = item.normalized();
+
+    final List<({double t, double value})> informative = samples
+        .where((s) => s.value > 0.0 && s.value < 1.0)
+        .toList();
+
+    if (informative.isEmpty) {
+      matchState['error'] = 'no intermediate samples to infer curve';
+      return false;
+    }
+
+    var matched = 0;
+
+    for (final s in informative) {
+      final double expected = curve.transform(s.t);
+      final double delta = (s.value - expected).abs();
+
+      if (delta <= tolerance) {
+        matched++;
+      }
+    }
+
+    final double coverage = matched / informative.length;
+    matchState['coverage'] = coverage;
+
+    return coverage >= minCoverage;
+  }
+
+  @override
+  Description describe(Description description) {
+    return description.add(
+      'follows ${curve.runtimeType} '
+      '(≥ ${(minCoverage * 100).round()}% informative samples within ±$tolerance)',
+    );
+  }
+
+  @override
+  Description describeMismatch(
+    dynamic item,
+    Description mismatchDescription,
+    Map matchState,
+    bool verbose,
+  ) {
+    if (matchState['error'] != null) {
+      return mismatchDescription.add(matchState['error'] as String);
+    }
+
+    return mismatchDescription.add(
+      'coverage was ${(matchState['coverage'] as double).toStringAsFixed(2)}',
+    );
+  }
 }

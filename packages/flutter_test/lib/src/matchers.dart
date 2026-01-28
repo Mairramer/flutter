@@ -459,6 +459,24 @@ Matcher isMethodCall(String name, {required dynamic arguments}) {
 Matcher coversSameAreaAs(Path expectedPath, {required Rect areaToCompare, int sampleSize = 20}) =>
     _CoversSameAreaAs(expectedPath, areaToCompare: areaToCompare, sampleSize: sampleSize);
 
+/// A [Matcher] that validates the progress of an animation at a specific linear time [t].
+///
+/// This matcher is particularly useful for testing animations that are encapsulated
+/// within widgets (e.g., [ModalBottomSheet]), where the [AnimationController] is
+/// not publicly accessible.
+///
+/// It traverses the element tree upwards from the provided [Finder] to locate the
+/// nearest [AnimatedWidget] and verifies if its [Animation.value] matches the
+/// expected [curve] transformation at time [t].
+///
+/// Example:
+/// ```dart
+/// expect(find.byKey(myWidgetKey), matchesAnimation(0.5, curve: Curves.easeIn));
+/// ```
+Matcher matchesAnimation(double t, {required Curve curve}) {
+  return _AnimationProgressMatcher(t, curve);
+}
+
 // Examples can assume:
 // late Image image;
 // late Future<Image> imageFuture;
@@ -3308,4 +3326,63 @@ Map<String, bool> _stringsMapFromSemanticsFlags(SemanticsFlags flagsCollection) 
     'hasRequiredState': flagsCollection.isRequired != ui.Tristate.none,
     'isRequired': flagsCollection.isRequired == ui.Tristate.isTrue,
   };
+}
+
+class _AnimationProgressMatcher extends Matcher {
+  _AnimationProgressMatcher(this.t, this.curve);
+
+  /// The linear time point (between 0.0 and 1.0) to check.
+  final double t;
+
+  /// The curve used to transform the linear time for comparison.
+  final Curve curve;
+
+  @override
+  bool matches(dynamic item, Map<dynamic, dynamic> matchState) {
+    if (item is! Finder) {
+      return false;
+    }
+
+    // Find the closest AnimatedWidget ancestor (e.g., SlideTransition, FadeTransition).
+    final Element? animatedElement = find
+        .ancestor(of: item, matching: find.byElementPredicate((e) => e.widget is AnimatedWidget))
+        .evaluate()
+        .firstOrNull;
+
+    if (animatedElement == null) {
+      return false;
+    }
+
+    final animatedWidget = animatedElement.widget as AnimatedWidget;
+    final animation = animatedWidget.listenable as Animation<double>;
+
+    // The expected value is the curve applied to linear time t.
+    final double expectedValue = curve.transform(t);
+
+    // Store state for failure description.
+    matchState['actual'] = animation.value;
+    matchState['expected'] = expectedValue;
+    matchState['status'] = animation.status;
+
+    // Use a small epsilon to account for floating-point precision.
+    return (animation.value - expectedValue).abs() <= 0.05;
+  }
+
+  @override
+  Description describe(Description description) =>
+      description.add('animation value at t=$t to be approximately ${curve.transform(t)}');
+
+  @override
+  Description describeMismatch(
+    dynamic item,
+    Description mismatchDescription,
+    Map<dynamic, dynamic> matchState,
+    bool verbose,
+  ) {
+    return mismatchDescription.add(
+      'failed at ${matchState['status']}. '
+      'Expected: ${matchState['expected']?.toStringAsFixed(4)}, '
+      'Actual: ${matchState['actual']?.toStringAsFixed(4)}',
+    );
+  }
 }
