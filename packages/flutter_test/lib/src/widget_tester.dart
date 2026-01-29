@@ -1180,6 +1180,79 @@ class WidgetTester extends WidgetController implements HitTestDispatcher, Ticker
     });
   }
 
+  /// Starts recording the progress of an animation for a widget found by [finder].
+  ///
+  /// This method locates the nearest [AnimatedWidget] ancestor (such as
+  /// [SlideTransition] or [FadeTransition]) and attaches a listener to its
+  /// [Animation] to track its values over time.
+  ///
+  /// The recording is passive; it captures values every time the [WidgetTester]
+  /// performs a [pump].
+  ///
+  /// See also:
+  ///
+  ///  * [AnimationTrace], the object that stores the captured frames.
+  AnimationTrace recordAnimation(Finder finder) {
+    // Standard Flutter guard to ensure the test is in a valid state.
+    TestAsyncUtils.guardSync();
+
+    final trace = AnimationTrace();
+
+    assert(() {
+      if (binding is LiveTestWidgetsFlutterBinding) {
+        // We warn users that in a live environment, timings might be less deterministic.
+        debugPrint(
+          'Warning: recordAnimation may capture real-time frames when running on a device.',
+        );
+      }
+      return true;
+    }());
+
+    void searchAndAttach() {
+      final Element? element = finder.evaluate().firstOrNull;
+
+      // If the element is not found immediately, we schedule a retry for the next frame.
+      if (element == null) {
+        binding.addPostFrameCallback((_) => searchAndAttach());
+        return;
+      }
+
+      final Element? animatedElement = find
+          .ancestor(
+            of: finder,
+            matching: find.byElementPredicate((Element e) => e.widget is AnimatedWidget),
+          )
+          .evaluate()
+          .cast<Element?>()
+          .firstWhere((Element? e) {
+            final widget = e!.widget as AnimatedWidget;
+            return widget.listenable is Animation<double>;
+          }, orElse: () => null);
+
+      if (animatedElement == null) {
+        // If we found the widget but no AnimatedWidget ancestor exists.
+        throw FlutterError.fromParts(<DiagnosticsNode>[
+          ErrorSummary(
+            'recordAnimation() could not find an AnimatedWidget for the provided finder.',
+          ),
+          ErrorDescription('The finder matched: ${finder.description}'),
+          ErrorHint(
+            'Ensure the target widget is a child of a Transition widget or another AnimatedWidget.',
+          ),
+        ]);
+      }
+
+      final animatedWidget = animatedElement.widget as AnimatedWidget;
+      final animation = animatedWidget.listenable as Animation<double>;
+      trace.attach(animation);
+    }
+
+    // Initialize the search after the current frame.
+    binding.addPostFrameCallback((_) => searchAndAttach());
+
+    return trace;
+  }
+
   @override
   void printToConsole(String message) {
     binding.debugPrintOverride(message);

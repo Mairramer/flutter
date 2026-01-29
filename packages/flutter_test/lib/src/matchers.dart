@@ -12,6 +12,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' show Card;
 import 'package:flutter/rendering.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:matcher/expect.dart';
@@ -3385,4 +3386,363 @@ class _AnimationProgressMatcher extends Matcher {
       'Actual: ${matchState['actual']?.toStringAsFixed(4)}',
     );
   }
+}
+
+// class AnimationTrace {
+//   final List<_Frame> _frames = [];
+//   Animation<double>? _animation;
+//   Duration? _startTime;
+
+//   /// Valores brutos da animação (0 → 1)
+//   List<double> get values => _frames.map((f) => f.value).toList();
+
+//   void attach(Animation<double> animation) {
+//     if (_animation != null) {
+//       return;
+//     }
+
+//     _animation = animation;
+//     _startTime = SchedulerBinding.instance.currentFrameTimeStamp;
+
+//     animation.addListener(_onTick);
+//   }
+
+//   void dispose() {
+//     _animation?.removeListener(_onTick);
+//     _animation = null;
+//     _startTime = null;
+//   }
+
+//   void _onTick() {
+//     final Duration now = SchedulerBinding.instance.currentFrameTimeStamp;
+//     final Duration elapsed = now - (_startTime ?? Duration.zero);
+
+//     _frames.add(_Frame(value: _animation!.value, time: elapsed));
+//   }
+
+//   List<({double t, double value})> normalized() {
+//     if (_frames.length < 2) {
+//       return const [];
+//     }
+
+//     // Remove frames finais redundantes (value não muda)
+//     final effectiveFrames = <_Frame>[];
+
+//     for (final _Frame f in _frames) {
+//       if (effectiveFrames.isEmpty || effectiveFrames.last.value != f.value) {
+//         effectiveFrames.add(f);
+//       }
+//     }
+
+//     if (effectiveFrames.length < 2) {
+//       return const [];
+//     }
+
+//     final int totalUs = effectiveFrames.last.time.inMicroseconds;
+//     if (totalUs == 0) {
+//       return const [];
+//     }
+
+//     return effectiveFrames.map((f) {
+//       final double t = f.time.inMicroseconds / totalUs;
+//       return (t: t.clamp(0.0, 1.0), value: f.value);
+//     }).toList();
+//   }
+// }
+
+class AnimationTrace {
+  final List<_Frame> _frames = [];
+  Animation<double>? _animation;
+  Duration? _startTime;
+
+  /// Optional: store a diagnostic instead of a string
+  AnimationCurveDiagnostics? curveDiagnostics;
+
+  List<double> get values => _frames.map((f) => f.value).toList();
+
+  void attach(Animation<double> animation) {
+    if (_animation != null) return;
+
+    _animation = animation;
+
+    // Use the safer diagnostic function
+    curveDiagnostics = diagnoseAnimationCurve(animation);
+
+    _startTime = SchedulerBinding.instance.currentFrameTimeStamp;
+    animation.addListener(_onTick);
+  }
+
+  void dispose() {
+    _animation?.removeListener(_onTick);
+    _animation = null;
+    _startTime = null;
+    curveDiagnostics = null;
+  }
+
+  void _onTick() {
+    final Duration now = SchedulerBinding.instance.currentFrameTimeStamp;
+    final Duration elapsed = now - (_startTime ?? Duration.zero);
+    _frames.add(_Frame(value: _animation!.value, time: elapsed));
+  }
+
+  List<({double t, double value})> _normalized() {
+    if (_frames.length < 2) {
+      return const [];
+    }
+
+    // Remove frames finais redundantes (value não muda)
+    final effectiveFrames = <_Frame>[];
+
+    for (final _Frame f in _frames) {
+      if (effectiveFrames.isEmpty || effectiveFrames.last.value != f.value) {
+        effectiveFrames.add(f);
+      }
+    }
+
+    if (effectiveFrames.length < 2) {
+      return const [];
+    }
+
+    final int totalUs = effectiveFrames.last.time.inMicroseconds;
+    if (totalUs == 0) {
+      return const [];
+    }
+
+    return effectiveFrames.map((f) {
+      final double t = f.time.inMicroseconds / totalUs;
+      return (t: t.clamp(0.0, 1.0), value: f.value);
+    }).toList();
+  }
+}
+
+String _identifyCurve(Animation<double> animation) {
+  // 1. If it's a CurvedAnimation, we've found our winner.
+  if (animation is CurvedAnimation) {
+    return animation.curve.toString();
+  }
+
+  // 2. Use recursion for wrapper types.
+  // Many Flutter animations (Proxy, Reverse, TrainHopping) have a 'parent' or 'source'.
+  // We use 'dynamic' carefully here to access internal parents without strict casting.
+  try {
+    final dynamic dynamicAnim = animation;
+
+    // Check for common wrapper properties in the Flutter Framework
+    if (dynamicAnim.parent is Animation<double>) {
+      return _identifyCurve(dynamicAnim.parent as Animation<double>);
+    }
+    if (dynamicAnim.source is Animation<double>) {
+      return _identifyCurve(dynamicAnim.source as Animation<double>);
+    }
+  } catch (_) {
+    // If reflection fails, we fall back to toString()
+  }
+
+  // 3. Fallback: Parse the toString() if it contains curve info
+  final description = animation.toString();
+  if (description.contains('curve:')) {
+    // Extract curve name from string if possible
+    return description;
+  }
+
+  return 'Animation<double> (Type: ${animation.runtimeType})';
+}
+
+class _Frame {
+  const _Frame({required this.value, required this.time});
+  final double value;
+  final Duration time;
+}
+
+extension AnimationRecorder on WidgetTester {
+  /// Captura a primeira Animation<double> encontrada acima do [finder].
+  ///
+  /// Funciona para AnimatedWidget e transições do framework.
+}
+
+/// A [Matcher] that verifies if the sequence of recorded animation values
+/// follows a specific [Curve].
+///
+/// It calculates the deviation between the recorded samples and the expected
+/// curve transformation.
+Matcher followsCurve(Curve curve) {
+  return _CurveMatcher(curve);
+}
+
+// class _CurveMatcher extends Matcher {
+//   _CurveMatcher(this.curve);
+
+//   final Curve curve;
+
+//   @override
+//   bool matches(covariant AnimationTrace item, Map<dynamic, dynamic> matchState) {
+//     final List<({double t, double value})> samples = item.normalized();
+
+//     // We only care about the transition period (0.0 < t < 1.0).
+//     final List<({double t, double value})> transitionSamples = samples
+//         .where((sample) => sample.t > 0.0 && sample.t < 1.0)
+//         .toList();
+
+//     if (transitionSamples.isEmpty) {
+//       matchState['error'] =
+//           'No intermediate animation frames were recorded. '
+//           'Ensure you call tester.pump() with a duration during the animation.';
+//       return false;
+//     }
+
+//     var totalError = 0.0;
+//     for (final sample in transitionSamples) {
+//       final double expected = curve.transform(sample.t);
+//       totalError += (sample.value - expected).abs();
+//     }
+
+//     final double averageError = totalError / transitionSamples.length;
+//     matchState['averageError'] = averageError;
+//     matchState['sampleCount'] = transitionSamples.length;
+
+//     // Flutter's standard precision tolerance is quite tight.
+//     // For curves, 0.05 average deviation is a healthy balance between
+//     // flexibility for frame-rounding and strictness for curve identity.
+//     return averageError <= 0.05;
+//   }
+
+//   @override
+//   Description describe(Description description) {
+//     return description.add('follows the ${curve.runtimeType} curve');
+//   }
+
+//   @override
+//   Description describeMismatch(
+//     dynamic item,
+//     Description mismatchDescription,
+//     Map<dynamic, dynamic> matchState,
+//     bool verbose,
+//   ) {
+//     if (matchState['error'] != null) {
+//       return mismatchDescription.add(matchState['error'] as String);
+//     }
+
+//     final averageError = matchState['averageError'] as double;
+//     final sampleCount = matchState['sampleCount'] as int;
+
+//     return mismatchDescription.add(
+//       'deviated from the curve by an average of ${averageError.toStringAsFixed(4)} '
+//       'across $sampleCount intermediate frames. '
+//       'This usually indicates the wrong Curve or AnimationStyle was used.',
+//     );
+//   }
+// }
+
+class _CurveMatcher extends Matcher {
+  _CurveMatcher(this.expectedCurve);
+
+  final Curve expectedCurve;
+
+  @override
+  bool matches(covariant AnimationTrace item, Map<dynamic, dynamic> matchState) {
+    final List<({double t, double value})> samples = item._normalized();
+    final List<({double t, double value})> transitionSamples = samples
+        .where((sample) => sample.t > 0.0 && sample.t < 1.0)
+        .toList();
+
+    if (transitionSamples.isEmpty) {
+      matchState['error'] =
+          'No intermediate frames captured. Animation might be too fast or duration too short.';
+      return false;
+    }
+
+    var totalError = 0.0;
+    for (final sample in transitionSamples) {
+      final double expected = expectedCurve.transform(sample.t);
+      totalError += (sample.value - expected).abs();
+    }
+
+    final double averageError = totalError / transitionSamples.length;
+    matchState['averageError'] = averageError;
+    matchState['actualCurve'] = item.curveDiagnostics?.curve.toString();
+    matchState['samples'] = transitionSamples;
+
+    return averageError <= 0.05;
+  }
+
+  @override
+  Description describeMismatch(
+    dynamic item,
+    Description mismatchDescription,
+    Map<dynamic, dynamic> matchState,
+    bool verbose,
+  ) {
+    if (matchState['error'] != null) {
+      return mismatchDescription.add(matchState['error'] as String);
+    }
+
+    final actualCurve = matchState['actualCurve'] as String;
+    final avgError = matchState['averageError'] as double;
+
+    mismatchDescription
+        .add(
+          'deviated from ${expectedCurve.runtimeType} by an average of ${avgError.toStringAsFixed(4)}.\n',
+        )
+        .add('    - The widget is actually using: $actualCurve\n')
+        .add('    - Check if the "sheetAnimationStyle" is correctly overriding the default curve.');
+
+    return mismatchDescription;
+  }
+
+  @override
+  Description describe(Description description) =>
+      description.add('follows the $expectedCurve curve');
+}
+
+class AnimationCurveDiagnostics {
+  const AnimationCurveDiagnostics({required this.kind, this.curve, this.wrapperChain = const []});
+
+  final AnimationCurveKind kind;
+  final Curve? curve;
+  final List<Type> wrapperChain;
+
+  @override
+  String toString() {
+    switch (kind) {
+      case AnimationCurveKind.direct:
+        return 'Direct curve: ${curve.runtimeType}';
+      case AnimationCurveKind.wrapped:
+        return 'Wrapped animation (wrappers: $wrapperChain)';
+      case AnimationCurveKind.unknown:
+        return 'Unknown animation structure (${wrapperChain.isEmpty ? "no wrappers" : wrapperChain})';
+    }
+  }
+}
+
+enum AnimationCurveKind { direct, wrapped, unknown }
+
+AnimationCurveDiagnostics diagnoseAnimationCurve(Animation<double> animation) {
+  final wrappers = <Type>[];
+  Animation<double>? current = animation;
+
+  for (var i = 0; i < 10 && current != null; i++) {
+    if (current is CurvedAnimation) {
+      return AnimationCurveDiagnostics(
+        kind: wrappers.isEmpty ? AnimationCurveKind.direct : AnimationCurveKind.wrapped,
+        curve: current.curve,
+        wrapperChain: wrappers,
+      );
+    }
+
+    wrappers.add(current.runtimeType);
+
+    final dynamic dyn = current;
+    if (dyn.parent is Animation<double>) {
+      current = dyn.parent as Animation<double>;
+    } else if (dyn.source is Animation<double>) {
+      current = dyn.source as Animation<double>;
+    } else {
+      current = null;
+    }
+  }
+
+  return AnimationCurveDiagnostics(
+    kind: wrappers.isEmpty ? AnimationCurveKind.unknown : AnimationCurveKind.wrapped,
+    wrapperChain: wrappers,
+  );
 }
