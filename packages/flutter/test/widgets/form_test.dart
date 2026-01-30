@@ -1886,7 +1886,8 @@ void main() {
 
     final List<FormFieldState<dynamic>> fields = formKey.currentState!.fields.toList();
 
-    expect(fields.every((field) => field.isValid), isFalse);
+    // Expect all fields to be invalid.
+    expect(fields.every((field) => !field.isValid), isTrue);
   });
 
   testWidgets('isValid evaluates validity without updating error UI', (WidgetTester tester) async {
@@ -1956,7 +1957,12 @@ void main() {
       };
     }
 
-    expect(collectData(), {'name': 'Name', 'email': 'Email', 'age': 18, 'animal': 'cat'});
+    expect(collectData(), <String, Object>{
+      'name': 'Name',
+      'email': 'Email',
+      'age': 18,
+      'animal': 'cat',
+    });
 
     FormFieldState<T> field<T>(String key) => formKey.currentState!.fields
         .whereType<FormFieldState<T>>()
@@ -1969,7 +1975,7 @@ void main() {
 
     await tester.pump();
 
-    expect(collectData(), {
+    expect(collectData(), <String, Object>{
       'name': 'New Name',
       'email': 'new@email.com',
       'age': 30,
