@@ -195,6 +195,7 @@ class ProxyAnimation extends Animation<double>
   ///
   /// This value is mutable. When mutated, the listeners on the proxy animation
   /// will be transparently updated to be listening to the new parent animation.
+  @override
   Animation<double>? get parent => _parent;
   Animation<double>? _parent;
   set parent(Animation<double>? value) {
@@ -276,6 +277,7 @@ class ReverseAnimation extends Animation<double>
   ReverseAnimation(this.parent);
 
   /// The animation whose value and direction this animation is reversing.
+  @override
   final Animation<double> parent;
 
   @override

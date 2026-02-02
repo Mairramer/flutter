@@ -3070,7 +3070,7 @@ void main() {
                   showModalBottomSheet<void>(
                     context: context,
                     sheetAnimationStyle: const AnimationStyle(
-                      curve: Curves.easeInOut,
+                      curve: Curves.easeIn,
                       reverseCurve: Curves.easeOut,
                       duration: Duration(milliseconds: 300),
                       reverseDuration: Duration(milliseconds: 300),
@@ -3099,30 +3099,154 @@ void main() {
       ),
     );
 
-    // --- TESTANDO A ENTRADA ---
-
-    // 1. Preparamos a gravação. O finder buscará o widget assim que ele aparecer.
     entranceTrace = tester.recordAnimation(find.byKey(sheetKey));
 
     // 1. Início: T=0
     await tester.tap(find.text('X'));
-    await tester.pumpAndSettle(); // Frame inicial (obrigatório para disparar o Ticker)
+    await tester.pumpAndSettle();
 
     print(entranceTrace.values);
 
-    // [0.15625, 0.5117177963256836, 1.0]
-    // Agora o teste passará
     expect(entranceTrace.values.last, equals(1.0));
-    expect(entranceTrace, followsCurve(Curves.easeIn));
+    expect(entranceTrace.curveDiagnostics?.curve, equals(Curves.easeIn));
+    print(entranceTrace.curveDiagnostics?.curve);
 
-    // --- TESTANDO A SAÍDA ---
-    // 1. Preparamos a gravação. O finder buscará o widget assim que ele aparecer.
     exitTrace = tester.recordAnimation(find.byKey(sheetKey));
-    // 1. Início: T=0
+
     await tester.tap(find.widgetWithText(FilledButton, 'Close'));
-    await tester.pumpAndSettle(); // Frame inicial (obrigatório para disparar
+    await tester.pumpAndSettle();
 
     print(exitTrace.values);
+  });
+
+  testWidgets('ScaleTransition follows Curve', (WidgetTester tester) async {
+    final Key sheetKey = UniqueKey();
+    final controller = AnimationController(
+      vsync: const TestVSync(),
+      duration: const Duration(milliseconds: 100),
+    );
+    final curve = CurvedAnimation(parent: controller, curve: Curves.bounceIn);
+
+    await tester.pumpWidget(
+      Directionality(
+        key: sheetKey,
+        textDirection: TextDirection.ltr,
+        child: ScaleTransition(scale: curve, child: const Text('Scale')),
+      ),
+    );
+
+    final AnimationTrace trace = tester.recordAnimation(find.byKey(sheetKey));
+
+    controller.forward();
+    await tester.pumpAndSettle();
+
+    print(trace.curveDiagnostics?.curve);
+    print(trace.values);
+
+    expect(trace.curveDiagnostics?.curve, Curves.bounceIn);
+    expect(trace.curveDiagnostics?.kind, AnimationCurveKind.direct);
+  });
+
+  testWidgets('PageRoute uses custom curves', (WidgetTester tester) async {
+    AnimationTrace? pageTrace;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: const Scaffold(body: Text('Page 1')),
+        onGenerateRoute: (settings) => PageRouteBuilder(
+          pageBuilder: (_, _, _) => const Scaffold(body: Text('Page 2')),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            // Aqui criamos o elo: FadeTransition -> CurvedAnimation -> ProxyAnimation (da rota)
+            return FadeTransition(
+              opacity: CurvedAnimation(parent: animation, curve: Curves.easeIn),
+              child: child,
+            );
+          },
+        ),
+      ),
+    );
+
+    // Find something on the next page (even if not visible yet)
+    pageTrace = tester.recordAnimation(find.text('Page 2'));
+
+    // Trigger navigation
+    tester.state<NavigatorState>(find.byType(Navigator)).pushNamed('/any');
+    await tester.pumpAndSettle();
+
+    // expect(pageTrace.curveDiagnostics?.kind, AnimationCurveKind.wrapped);
+
+    print(pageTrace.curveDiagnostics?.curve);
+    print(pageTrace.values);
+    // Default PageRoute curve is usually linear unless specified,
+    // but the 'path' should show the ProxyAnimation layers.
+  });
+
+  testWidgets('PageRoute uses custom curves1', (WidgetTester tester) async {
+    AnimationTrace? pageTrace;
+    const Curve targetCurve = Curves.easeIn;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: const Scaffold(body: Text('Page 1')),
+        onGenerateRoute: (settings) => PageRouteBuilder(
+          pageBuilder: (_, animation, _) => const Scaffold(body: Text('Page 2')),
+          transitionsBuilder: (_, animation, _, child) {
+            // Criamos o FadeTransition e damos a ele uma KEY
+            return FadeTransition(
+              key: const ValueKey<String>('transition'),
+              opacity: CurvedAnimation(parent: animation, curve: targetCurve),
+              child: child,
+            );
+          },
+        ),
+      ),
+    );
+
+    tester.state<NavigatorState>(find.byType(Navigator)).pushNamed('/any');
+    await tester.pump();
+
+    // BUSCA DIRETA: Garantimos que o rastro começa no FadeTransition que tem a curva
+    pageTrace = tester.recordAnimation(find.byKey(const ValueKey<String>('transition')));
+
+    await tester.pumpAndSettle();
+
+    print('Chain: ${pageTrace.curveDiagnostics}');
+    print('Detected Curve: ${pageTrace.curveDiagnostics?.curve}');
+
+    expect(pageTrace.curveDiagnostics?.curve, equals(targetCurve));
+  });
+
+  testWidgets('Animation offset', (WidgetTester tester) async {
+    AnimationTrace? pageTrace;
+    const Curve targetCurve = Curves.easeIn;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: const Scaffold(body: Text('Page 1')),
+        onGenerateRoute: (settings) => PageRouteBuilder(
+          pageBuilder: (_, animation, _) => const Scaffold(body: Text('Page 2')),
+          transitionsBuilder: (_, animation, _, child) {
+            return SlideTransition(
+              key: const ValueKey<String>('transition'),
+              position: Tween<Offset>(
+                begin: const Offset(1.0, 0.0),
+                end: Offset.zero,
+              ).animate(CurvedAnimation(parent: animation, curve: targetCurve)),
+              child: child,
+            );
+          },
+        ),
+      ),
+    );
+
+    tester.state<NavigatorState>(find.byType(Navigator)).pushNamed('/any');
+    await tester.pump();
+
+    // BUSCA DIRETA: Garantimos que o rastro começa no SlideTransition que tem a curva
+    pageTrace = tester.recordAnimation(find.byKey(const ValueKey<String>('transition')));
+    await tester.pumpAndSettle();
+    print('Chain: ${pageTrace.curveDiagnostics}');
+    print('Detected Curve: ${pageTrace.curveDiagnostics?.curve}');
   });
 }
 

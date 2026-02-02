@@ -374,6 +374,9 @@ abstract class Animation<T> extends Listenable implements ValueListenable<T> {
       AnimationStatus.dismissed => '\u23EE', // |<<
     };
   }
+
+  ///
+  Animation<Object?>? get parent => null;
 }
 
 // An implementation of an animation that delegates to a value listenable with a fixed direction.

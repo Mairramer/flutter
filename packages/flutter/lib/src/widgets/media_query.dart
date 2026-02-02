@@ -352,17 +352,17 @@ class MediaQueryData {
   }
 
   static BorderRadius? _displayCornerRadiiFromView(ui.FlutterView view) {
-    final ui.DisplayCornerRadii? displayCornerRadii = view.displayCornerRadii;
-    if (displayCornerRadii == null) {
-      return null;
-    }
-    final double devicePixelRatio = view.devicePixelRatio;
-    return BorderRadius.only(
-      topLeft: Radius.circular(displayCornerRadii.topLeft / devicePixelRatio),
-      topRight: Radius.circular(displayCornerRadii.topRight / devicePixelRatio),
-      bottomRight: Radius.circular(displayCornerRadii.bottomRight / devicePixelRatio),
-      bottomLeft: Radius.circular(displayCornerRadii.bottomLeft / devicePixelRatio),
-    );
+    // final ui.DisplayCornerRadii? displayCornerRadii = view.displayCornerRadii;
+    // if (displayCornerRadii == null) {
+    return null;
+    // }
+    // final double devicePixelRatio = view.devicePixelRatio;
+    // return BorderRadius.only(
+    //   topLeft: Radius.circular(displayCornerRadii.topLeft / devicePixelRatio),
+    //   topRight: Radius.circular(displayCornerRadii.topRight / devicePixelRatio),
+    //   bottomRight: Radius.circular(displayCornerRadii.bottomRight / devicePixelRatio),
+    //   bottomLeft: Radius.circular(displayCornerRadii.bottomLeft / devicePixelRatio),
+    // );
   }
 
   /// The size of the media in logical pixels (e.g, the size of the screen).

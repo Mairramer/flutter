@@ -1180,78 +1180,239 @@ class WidgetTester extends WidgetController implements HitTestDispatcher, Ticker
     });
   }
 
-  /// Starts recording the progress of an animation for a widget found by [finder].
-  ///
-  /// This method locates the nearest [AnimatedWidget] ancestor (such as
-  /// [SlideTransition] or [FadeTransition]) and attaches a listener to its
-  /// [Animation] to track its values over time.
-  ///
-  /// The recording is passive; it captures values every time the [WidgetTester]
-  /// performs a [pump].
-  ///
-  /// See also:
-  ///
-  ///  * [AnimationTrace], the object that stores the captured frames.
+  // /// Starts recording the progress of an animation for a widget found by [finder].
+  // ///
+  // /// This method locates the nearest [AnimatedWidget] ancestor (such as
+  // /// [SlideTransition] or [FadeTransition]) and attaches a listener to its
+  // /// [Animation] to track its values over time.
+  // ///
+  // /// The recording is passive; it captures values every time the [WidgetTester]
+  // /// performs a [pump].
+  // ///
+  // /// See also:
+  // ///
+  // ///  * [AnimationTrace], the object that stores the captured frames.
+  // AnimationTrace recordAnimation(Finder finder) {
+  //   // Standard Flutter guard to ensure the test is in a valid state.
+  //   TestAsyncUtils.guardSync();
+
+  //   final trace = AnimationTrace();
+
+  //   assert(() {
+  //     if (binding is LiveTestWidgetsFlutterBinding) {
+  //       // We warn users that in a live environment, timings might be less deterministic.
+  //       debugPrint(
+  //         'Warning: recordAnimation may capture real-time frames when running on a device.',
+  //       );
+  //     }
+  //     return true;
+  //   }());
+
+  //   void searchAndAttach() {
+  //     final Element? element = finder.evaluate().firstOrNull;
+
+  //     // If the element is not found immediately, we schedule a retry for the next frame.
+  //     if (element == null) {
+  //       binding.addPostFrameCallback((_) => searchAndAttach());
+  //       return;
+  //     }
+
+  //     final Element? animatedElement = find
+  //         .ancestor(
+  //           of: finder,
+  //           matching: find.byElementPredicate((Element e) => e.widget is AnimatedWidget),
+  //         )
+  //         .evaluate()
+  //         .cast<Element?>()
+  //         .firstWhere((Element? e) {
+  //           final widget = e!.widget as AnimatedWidget;
+  //           return widget.listenable is Animation<double>;
+  //         }, orElse: () => null);
+
+  //     if (animatedElement == null) {
+  //       // If we found the widget but no AnimatedWidget ancestor exists.
+  //       throw FlutterError.fromParts(<DiagnosticsNode>[
+  //         ErrorSummary(
+  //           'recordAnimation() could not find an AnimatedWidget for the provided finder.',
+  //         ),
+  //         ErrorDescription('The finder matched: ${finder.description}'),
+  //         ErrorHint(
+  //           'Ensure the target widget is a child of a Transition widget or another AnimatedWidget.',
+  //         ),
+  //       ]);
+  //     }
+
+  //     final animatedWidget = animatedElement.widget as AnimatedWidget;
+  //     final animation = animatedWidget.listenable as Animation<double>;
+  //     trace.attach(animation);
+  //   }
+
+  //   // Initialize the search after the current frame.
+  //   binding.addPostFrameCallback((_) => searchAndAttach());
+
+  //   return trace;
+  // }
+
   AnimationTrace recordAnimation(Finder finder) {
-    // Standard Flutter guard to ensure the test is in a valid state.
     TestAsyncUtils.guardSync();
-
-    final trace = AnimationTrace();
-
-    assert(() {
-      if (binding is LiveTestWidgetsFlutterBinding) {
-        // We warn users that in a live environment, timings might be less deterministic.
-        debugPrint(
-          'Warning: recordAnimation may capture real-time frames when running on a device.',
-        );
-      }
-      return true;
-    }());
+    final AnimationTrace<dynamic> trace = AnimationTrace();
 
     void searchAndAttach() {
-      final Element? element = finder.evaluate().firstOrNull;
-
-      // If the element is not found immediately, we schedule a retry for the next frame.
-      if (element == null) {
+      final Element? rootElement = finder.evaluate().firstOrNull;
+      if (rootElement == null) {
         binding.addPostFrameCallback((_) => searchAndAttach());
         return;
       }
 
-      final Element? animatedElement = find
-          .ancestor(
-            of: finder,
-            matching: find.byElementPredicate((Element e) => e.widget is AnimatedWidget),
-          )
-          .evaluate()
-          .cast<Element?>()
-          .firstWhere((Element? e) {
-            final widget = e!.widget as AnimatedWidget;
-            return widget.listenable is Animation<double>;
-          }, orElse: () => null);
+      Animation<double>? found;
 
-      if (animatedElement == null) {
-        // If we found the widget but no AnimatedWidget ancestor exists.
-        throw FlutterError.fromParts(<DiagnosticsNode>[
-          ErrorSummary(
-            'recordAnimation() could not find an AnimatedWidget for the provided finder.',
-          ),
-          ErrorDescription('The finder matched: ${finder.description}'),
-          ErrorHint(
-            'Ensure the target widget is a child of a Transition widget or another AnimatedWidget.',
-          ),
-        ]);
+      // Inspeciona as propriedades públicas de diagnóstico de um objeto.
+      void inspect(Object? object) {
+        if (found != null || object is! Diagnosticable) {
+          return;
+        }
+
+        // Obtém a subárvore de propriedades que o objeto expõe para ferramentas de inspeção.
+        final List<DiagnosticsNode> properties = object.toDiagnosticsNode().getProperties();
+        // print(properties);
+
+        for (final node in properties) {
+          final Object? value = node.value;
+          if (value is Animation<double>) {
+            found = value;
+            return;
+          }
+        }
       }
 
-      final animatedWidget = animatedElement.widget as AnimatedWidget;
-      final animation = animatedWidget.listenable as Animation<double>;
-      trace.attach(animation);
+      void probe(Element element) {
+        inspect(element.widget);
+        if (element is StatefulElement) {
+          inspect(element.state);
+        }
+      }
+
+      // 1. Tenta o elemento atual
+      probe(rootElement);
+
+      // 2. Se não encontrou, sobe a árvore de elementos
+      if (found == null) {
+        rootElement.visitAncestorElements((Element e) {
+          probe(e);
+          return found == null;
+        });
+      }
+
+      // 3. Como última tentativa, olha os descendentes imediatos
+      if (found == null) {
+        rootElement.visitChildren((Element e) => probe(e));
+      }
+
+      if (found != null) {
+        trace.attach(found!);
+      } else {
+        throw FlutterError(
+          'recordAnimation() could not find an Animation<double> for ${finder.description}.\n'
+          'The target object or its ancestors must expose an Animation<double> in their diagnostics.',
+        );
+      }
     }
 
-    // Initialize the search after the current frame.
     binding.addPostFrameCallback((_) => searchAndAttach());
-
     return trace;
   }
+
+  // /// Records an animation of any type [T].
+  // /// Example: recordAnimation<Offset>(finder) or recordAnimation<double>(finder)
+  // AnimationTrace<T> recordAnimation<T>(Finder finder) {
+  //   TestAsyncUtils.guardSync();
+  //   final trace = AnimationTrace<T>();
+
+  //   void searchAndAttach() {
+  //     final Element? rootElement = finder.evaluate().firstOrNull;
+  //     if (rootElement == null) {
+  //       binding.addPostFrameCallback((_) => searchAndAttach());
+  //       return;
+  //     }
+
+  //     Animation<T>? found;
+
+  //     /// Refined generic extraction logic
+  //     bool tryExtract(Object? target) {
+  //       if (found != null || target == null) return found != null;
+
+  //       // 1. Direct Type Match
+  //       if (target is Animation<T>) {
+  //         try {
+  //           // Verify lifecycle: accessing status on disposed controllers throws.
+  //           final _ = target.status;
+  //           found = target;
+  //           return true;
+  //         } catch (_) {
+  //           return false;
+  //         }
+  //       }
+
+  //       // 2. Reflective Property Access (Duck Typing)
+  //       // Check common property names without caring about Element type.
+  //       final dynamic proxy = target;
+  //       try {
+  //         if (proxy.animation is Animation<T>) return tryExtract(proxy.animation);
+  //         if (proxy.controller is Animation<T>) return tryExtract(proxy.controller);
+  //       } catch (_) {}
+
+  //       // 3. Diagnostics Fallback
+  //       if (target is Diagnosticable) {
+  //         final properties = target.toDiagnosticsNode().getProperties();
+  //         for (final node in properties) {
+  //           final value = node.value;
+  //           if (value is Animation<T>) {
+  //             return tryExtract(value);
+  //           }
+  //         }
+  //       }
+  //       return false;
+  //     }
+
+  //     void probe(Element element) {
+  //       if (found != null) return;
+
+  //       // Check the Widget
+  //       if (tryExtract(element.widget)) return;
+
+  //       // Check the Element's internal state (works for any Element with a 'state' property)
+  //       final dynamic e = element;
+  //       try {
+  //         if (tryExtract(e.state)) return;
+  //       } catch (_) {}
+  //     }
+
+  //     // Execution: Current -> Ancestors -> Children
+  //     probe(rootElement);
+  //     if (found == null) {
+  //       rootElement.visitAncestorElements((e) {
+  //         probe(e);
+  //         return found == null;
+  //       });
+  //     }
+  //     if (found == null) {
+  //       rootElement.visitChildren(probe);
+  //     }
+
+  //     if (found != null) {
+  //       trace.attach(found!);
+  //     } else {
+  //       throw FlutterError.fromParts([
+  //         ErrorSummary('recordAnimation<$T>() failed for ${finder.description}'),
+  //         ErrorDescription('Could not find an Animation<$T> in the target or its neighbors.'),
+  //         ErrorHint('Ensure the object is public or exposed via DiagnosticsNode.'),
+  //       ]);
+  //     }
+  //   }
+
+  //   binding.addPostFrameCallback((_) => searchAndAttach());
+  //   return trace;
+  // }
 
   @override
   void printToConsole(String message) {
