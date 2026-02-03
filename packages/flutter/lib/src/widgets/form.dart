@@ -335,6 +335,10 @@ class FormState extends State<Form> {
 
   /// Clears the validation errors for all [FormField]s in this [Form]
   /// without resetting their values.
+  ///
+  /// See also:
+  ///
+  ///  * [FormFieldState.clearError], which clears the error for a single form field.
   void clearError() {
     for (final FormFieldState<dynamic> field in _fields) {
       field._clearErrorInternal();
