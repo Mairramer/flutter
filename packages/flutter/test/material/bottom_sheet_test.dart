@@ -3164,6 +3164,51 @@ void main() {
 
     await tester.pumpAndSettle();
   });
+
+  testWidgets('ModalBottomSheet with AnimationStyle.noAnimation opens and closes immediately', (
+    WidgetTester tester,
+  ) async {
+    final Key sheetKey = UniqueKey();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Builder(
+            builder: (BuildContext context) {
+              return GestureDetector(
+                onTap: () {
+                  showModalBottomSheet<void>(
+                    context: context,
+                    sheetAnimationStyle: AnimationStyle.noAnimation,
+                    builder: (BuildContext context) {
+                      return SizedBox(
+                        key: sheetKey,
+                        child: FilledButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Close'),
+                        ),
+                      );
+                    },
+                  );
+                },
+                child: const Text('Open'),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Open'));
+    await tester.pump();
+
+    expect(find.byKey(sheetKey), findsOneWidget);
+
+    await tester.tap(find.text('Close'));
+    await tester.pump();
+
+    expect(find.byKey(sheetKey), findsNothing);
+  });
 }
 
 class _TestPage extends StatelessWidget {
