@@ -663,6 +663,7 @@ class _ModalBottomSheet<T> extends StatefulWidget {
     this.scrollControlDisabledMaxHeightRatio = _kDefaultScrollControlDisabledMaxHeightRatio,
     this.enableDrag = true,
     this.showDragHandle = false,
+    this.animationStyle,
   });
 
   final ModalBottomSheetRoute<T> route;
@@ -675,13 +676,28 @@ class _ModalBottomSheet<T> extends StatefulWidget {
   final BoxConstraints? constraints;
   final bool enableDrag;
   final bool showDragHandle;
+  final AnimationStyle? animationStyle;
 
   @override
   _ModalBottomSheetState<T> createState() => _ModalBottomSheetState<T>();
 }
 
 class _ModalBottomSheetState<T> extends State<_ModalBottomSheet<T>> {
-  ParametricCurve<double> animationCurve = _kModalBottomSheetCurve;
+  late final ProxyAnimation _sheetAnimation;
+  late Animation<double> _curvedSheetAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _curvedSheetAnimation = CurvedAnimation(
+      parent: widget.route.animation!,
+      curve: widget.animationStyle?.curve ?? _kModalBottomSheetCurve,
+      reverseCurve: widget.animationStyle?.reverseCurve ?? _kModalBottomSheetCurve,
+    );
+
+    _sheetAnimation = ProxyAnimation(_curvedSheetAnimation);
+  }
 
   String _getRouteLabel(MaterialLocalizations localizations) {
     switch (defaultTargetPlatform) {
@@ -702,14 +718,17 @@ class _ModalBottomSheetState<T> extends State<_ModalBottomSheet<T>> {
 
   void handleDragStart(DragStartDetails details) {
     // Allow the bottom sheet to track the user's finger accurately.
-    animationCurve = Curves.linear;
+    _sheetAnimation.parent = widget.route.animation;
   }
 
   void handleDragEnd(DragEndDetails details, {bool? isClosing}) {
-    // Allow the bottom sheet to animate smoothly from its current position.
-    animationCurve =
-        widget.route._animation?.reverseCurve ??
-        Split(widget.route.animation!.value, endCurve: _kModalBottomSheetCurve);
+    _curvedSheetAnimation = CurvedAnimation(
+      parent: widget.route.animation!,
+      curve: widget.animationStyle?.curve ?? _kModalBottomSheetCurve,
+      reverseCurve: widget.animationStyle?.reverseCurve ?? _kModalBottomSheetCurve,
+    );
+
+    _sheetAnimation.parent = _curvedSheetAnimation;
   }
 
   @override
@@ -740,7 +759,7 @@ class _ModalBottomSheetState<T> extends State<_ModalBottomSheet<T>> {
         onDragEnd: handleDragEnd,
       ),
       builder: (BuildContext context, Widget? child) {
-        final double animationValue = widget.route.animation!.value;
+        final double animationValue = _sheetAnimation.value;
         return Semantics(
           scopesRoute: true,
           namesRoute: true,
@@ -1025,11 +1044,8 @@ class ModalBottomSheetRoute<T> extends PopupRoute<T> {
 
   final ValueNotifier<EdgeInsets> _clipDetailsNotifier = ValueNotifier<EdgeInsets>(EdgeInsets.zero);
 
-  CurvedAnimation? _animation;
-
   @override
   void dispose() {
-    _animation?.dispose();
     _clipDetailsNotifier.dispose();
     super.dispose();
   }
@@ -1086,18 +1102,6 @@ class ModalBottomSheetRoute<T> extends PopupRoute<T> {
   }
 
   @override
-  Animation<double> createAnimation() {
-    if (sheetAnimationStyle != AnimationStyle.noAnimation) {
-      return _animation ??= CurvedAnimation(
-        parent: super.createAnimation(),
-        curve: sheetAnimationStyle?.curve ?? _kModalBottomSheetCurve,
-        reverseCurve: sheetAnimationStyle?.reverseCurve ?? _kModalBottomSheetCurve,
-      );
-    }
-    return super.createAnimation();
-  }
-
-  @override
   Widget buildPage(
     BuildContext context,
     Animation<double> animation,
@@ -1113,6 +1117,7 @@ class ModalBottomSheetRoute<T> extends PopupRoute<T> {
               : const BottomSheetThemeData();
           return _ModalBottomSheet<T>(
             route: this,
+            animationStyle: sheetAnimationStyle,
             backgroundColor:
                 backgroundColor ??
                 sheetTheme.modalBackgroundColor ??
@@ -1154,7 +1159,9 @@ class ModalBottomSheetRoute<T> extends PopupRoute<T> {
         ColorTween(
           begin: barrierColor.withValues(alpha: 0.0),
           end: barrierColor, // changedInternalState is called if barrierColor updates
-        ),
+        ).chain(
+          CurveTween(curve: barrierCurve),
+        ), // changedInternalState is called if barrierCurve updates
       );
       return AnimatedModalBarrier(
         color: color,
