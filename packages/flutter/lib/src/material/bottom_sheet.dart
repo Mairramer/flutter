@@ -689,13 +689,11 @@ class _ModalBottomSheetState<T> extends State<_ModalBottomSheet<T>> {
   @override
   void initState() {
     super.initState();
-
     _curvedSheetAnimation = CurvedAnimation(
       parent: widget.route.animation!,
       curve: widget.animationStyle?.curve ?? _kModalBottomSheetCurve,
       reverseCurve: widget.animationStyle?.reverseCurve ?? _kModalBottomSheetCurve,
     );
-
     _sheetAnimation = ProxyAnimation(_curvedSheetAnimation);
   }
 
@@ -722,12 +720,7 @@ class _ModalBottomSheetState<T> extends State<_ModalBottomSheet<T>> {
   }
 
   void handleDragEnd(DragEndDetails details, {bool? isClosing}) {
-    _curvedSheetAnimation = CurvedAnimation(
-      parent: widget.route.animation!,
-      curve: widget.animationStyle?.curve ?? _kModalBottomSheetCurve,
-      reverseCurve: widget.animationStyle?.reverseCurve ?? _kModalBottomSheetCurve,
-    );
-
+    // Allow the bottom sheet to animate smoothly from its current position.
     _sheetAnimation.parent = _curvedSheetAnimation;
   }
 
