@@ -739,7 +739,7 @@ class _ModalBottomSheetState<T> extends State<_ModalBottomSheet<T>> {
     final String routeLabel = _getRouteLabel(localizations);
 
     return AnimatedBuilder(
-      animation: widget.route.animation!,
+      animation: _sheetAnimation,
       child: BottomSheet(
         animationController: widget.route._animationController,
         onClosing: () {
