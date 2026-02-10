@@ -684,7 +684,7 @@ class _ModalBottomSheet<T> extends StatefulWidget {
 
 class _ModalBottomSheetState<T> extends State<_ModalBottomSheet<T>> {
   late final ProxyAnimation _sheetAnimation;
-  late final Animation<double> _curvedSheetAnimation;
+  late final CurvedAnimation _curvedSheetAnimation;
 
   @override
   void initState() {
@@ -701,6 +701,7 @@ class _ModalBottomSheetState<T> extends State<_ModalBottomSheet<T>> {
   void dispose() {
     // Detach to avoid leaking listeners on the route animation.
     _sheetAnimation.parent = kAlwaysDismissedAnimation;
+    _curvedSheetAnimation.dispose();
     super.dispose();
   }
 
