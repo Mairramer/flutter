@@ -699,7 +699,8 @@ class _ModalBottomSheetState<T> extends State<_ModalBottomSheet<T>> {
 
   @override
   void dispose() {
-    _sheetAnimation.parent = null;
+    // Detach to avoid leaking listeners on the route animation.
+    _sheetAnimation.parent = kAlwaysDismissedAnimation;
     super.dispose();
   }
 
