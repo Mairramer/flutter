@@ -684,7 +684,7 @@ class _ModalBottomSheet<T> extends StatefulWidget {
 
 class _ModalBottomSheetState<T> extends State<_ModalBottomSheet<T>> {
   late final ProxyAnimation _sheetAnimation;
-  late Animation<double> _curvedSheetAnimation;
+  late final Animation<double> _curvedSheetAnimation;
 
   @override
   void initState() {
@@ -695,6 +695,12 @@ class _ModalBottomSheetState<T> extends State<_ModalBottomSheet<T>> {
       reverseCurve: widget.animationStyle?.reverseCurve ?? _kModalBottomSheetCurve,
     );
     _sheetAnimation = ProxyAnimation(_curvedSheetAnimation);
+  }
+
+  @override
+  void dispose() {
+    _sheetAnimation.parent = null;
+    super.dispose();
   }
 
   String _getRouteLabel(MaterialLocalizations localizations) {
