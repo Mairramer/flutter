@@ -1906,7 +1906,7 @@ class DropdownButtonFormField<T> extends FormField<T> {
                  value: state.value,
                  hint: effectiveHint,
                  disabledHint: effectiveDisabledHint,
-                 onChanged: state.didChange,
+                 onChanged: onChanged == null ? null : state.didChange,
                  onTap: onTap,
                  elevation: elevation,
                  style: style,

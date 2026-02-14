@@ -7,4 +7,13 @@ import 'package:flutter/material.dart';
 void main() {
   // Changes made in https://github.com/flutter/flutter/pull/170805.
   DropdownButtonFormField(value: 'one');
+
+  // Changes made in https://github.com/flutter/flutter/pull/182419.
+  DropdownButton(onChanged: null);
+
+  // Changes made in https://github.com/flutter/flutter/pull/182419.
+  DropdownButtonFormField(onChanged: null);
+
+  // Changes made in https://github.com/flutter/flutter/pull/182419.
+  DropdownButton(onChanged: (String? v) {});
 }
