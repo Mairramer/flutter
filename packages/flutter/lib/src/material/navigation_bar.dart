@@ -613,14 +613,13 @@ class _NavigationDestinationBuilderState extends State<_NavigationDestinationBui
       ),
     );
 
-    if (_effectiveTooltip != null && _effectiveTooltip!.isNotEmpty) {
-      child = _NavigationBarDestinationTooltip(message: _effectiveTooltip!, child: child);
+    final String tooltip = widget.tooltip ?? widget.label;
+    if (tooltip.isNotEmpty) {
+      child = _NavigationBarDestinationTooltip(message: tooltip, child: child);
     }
 
     return _NavigationBarDestinationSemantics(enabled: widget.enabled, child: child);
   }
-
-  String? get _effectiveTooltip => widget.tooltip ?? widget.label;
 }
 
 class _IndicatorInkWell extends InkResponse {
