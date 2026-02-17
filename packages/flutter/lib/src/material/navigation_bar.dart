@@ -593,32 +593,34 @@ class _NavigationDestinationBuilderState extends State<_NavigationDestinationBui
     final NavigationBarThemeData navigationBarTheme = NavigationBarTheme.of(context);
     final NavigationBarThemeData defaults = _defaultsFor(context);
 
-    return _NavigationBarDestinationSemantics(
-      enabled: widget.enabled,
-      child: _NavigationBarDestinationTooltip(
-        message: widget.tooltip ?? widget.label,
-        child: _IndicatorInkWell(
-          iconKey: iconKey,
-          labelBehavior: info.labelBehavior,
-          customBorder:
-              info.indicatorShape ?? navigationBarTheme.indicatorShape ?? defaults.indicatorShape,
-          overlayColor: info.overlayColor ?? navigationBarTheme.overlayColor,
-          onTap: widget.enabled ? info.onTap : null,
-          child: Row(
-            children: <Widget>[
-              Expanded(
-                child: _NavigationBarDestinationLayout(
-                  icon: widget.buildIcon(context),
-                  iconKey: iconKey,
-                  label: widget.buildLabel(context),
-                ),
-              ),
-            ],
+    Widget child = _IndicatorInkWell(
+      iconKey: iconKey,
+      labelBehavior: info.labelBehavior,
+      customBorder:
+          info.indicatorShape ?? navigationBarTheme.indicatorShape ?? defaults.indicatorShape,
+      overlayColor: info.overlayColor ?? navigationBarTheme.overlayColor,
+      onTap: widget.enabled ? info.onTap : null,
+      child: Row(
+        children: <Widget>[
+          Expanded(
+            child: _NavigationBarDestinationLayout(
+              icon: widget.buildIcon(context),
+              iconKey: iconKey,
+              label: widget.buildLabel(context),
+            ),
           ),
-        ),
+        ],
       ),
     );
+
+    if (_effectiveTooltip != null && _effectiveTooltip!.isNotEmpty) {
+      child = _NavigationBarDestinationTooltip(message: _effectiveTooltip!, child: child);
+    }
+
+    return _NavigationBarDestinationSemantics(enabled: widget.enabled, child: child);
   }
+
+  String? get _effectiveTooltip => widget.tooltip ?? widget.label;
 }
 
 class _IndicatorInkWell extends InkResponse {

@@ -1760,6 +1760,31 @@ void main() {
     );
     expect(tester.getSize(find.byType(NavigationBar)), Size.zero);
   });
+
+  // Regression test for https://github.com/flutter/flutter/issues/182495.
+  testWidgets('NavigationDestination ignores empty tooltip', (WidgetTester tester) async {
+    const emptyTooltip = '';
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          bottomNavigationBar: NavigationBar(
+            destinations: const <NavigationDestination>[
+              NavigationDestination(label: 'A', tooltip: emptyTooltip, icon: Icon(Icons.ac_unit)),
+              NavigationDestination(label: 'B', icon: Icon(Icons.battery_alert)),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('A'), findsOneWidget);
+    await tester.longPress(find.text('A'));
+    expect(find.byTooltip(emptyTooltip), findsNothing);
+
+    await tester.longPress(find.text('B'));
+    expect(find.text('B'), findsNWidgets(2));
+  });
 }
 
 Widget _buildWidget(Widget child, {bool? useMaterial3}) {
