@@ -1783,7 +1783,7 @@ void main() {
     expect(find.byTooltip(emptyTooltip), findsNothing);
 
     await tester.longPress(find.text('B'));
-    expect(find.text('B'), findsNWidgets(2));
+    expect(find.byTooltip('B'), findsOneWidget);
   });
 }
 
