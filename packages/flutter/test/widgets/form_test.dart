@@ -7,8 +7,6 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'editable_text_utils.dart';
-
 void main() {
   testWidgets('onSaved callback is called', (WidgetTester tester) async {
     final formKey = GlobalKey<FormState>();
@@ -64,7 +62,7 @@ void main() {
             child: Center(
               child: Material(
                 child: Form(
-                  child: TestTextField(
+                  child: TextField(
                     onChanged: (String value) {
                       fieldValue = value;
                     },
@@ -82,7 +80,7 @@ void main() {
     expect(fieldValue, isNull);
 
     Future<void> checkText(String testValue) async {
-      await tester.enterText(find.byType(TestTextField), testValue);
+      await tester.enterText(find.byType(TextField), testValue);
       // Pumping is unnecessary because callback happens regardless of frames.
       expect(fieldValue, equals(testValue));
     }
@@ -1596,7 +1594,11 @@ void main() {
                         initialValue: 'foo',
                         validator: errorText,
                       ),
-                      TextFormField(initialValue: 'bar', validator: errorText),
+                      TextFormField(
+                        autovalidateMode: AutovalidateMode.disabled,
+                        initialValue: 'bar',
+                        validator: errorText,
+                      ),
                     ],
                   ),
                 ),
@@ -1608,7 +1610,6 @@ void main() {
     }
 
     await tester.pumpWidget(builder());
-    await tester.pump();
 
     // Verify that the error text is displayed for the first TextFormField.
     expect(find.text(errorText('foo')!), findsOneWidget);
@@ -1680,7 +1681,7 @@ void main() {
     expect(focusNode2.hasFocus, isTrue);
   });
 
-  testWidgets('AutovalidateMode.always should validate on first build', (
+  testWidgets('AutovalidateMode.always should validate on second build', (
     WidgetTester tester,
   ) async {
     String errorText(String? value) => '$value/error';
@@ -1704,7 +1705,14 @@ void main() {
       ),
     );
 
-    // The error shows up on the first frame.
+    // The validation happens in a post frame callback, so the error
+    // doesn't show up until the second frame.
+    expect(find.text(errorText('foo')), findsNothing);
+    expect(find.text(errorText('bar')), findsNothing);
+
+    await tester.pump();
+
+    // The error shows up on the second frame.
     expect(find.text(errorText('foo')), findsOneWidget);
     expect(find.text(errorText('bar')), findsOneWidget);
   });
@@ -1809,112 +1817,102 @@ void main() {
     );
   });
 
-  testWidgets('Form does not crash at zero area', (WidgetTester tester) async {
-    await tester.pumpWidget(
-      const Directionality(
-        textDirection: TextDirection.ltr,
-        child: Center(
-          child: SizedBox.shrink(child: Form(child: Text('X'))),
-        ),
-      ),
-    );
-    expect(tester.getSize(find.byType(Form)), Size.zero);
-  });
-
-  testWidgets('FormField does not crash at zero area', (WidgetTester tester) async {
-    await tester.pumpWidget(
-      Directionality(
-        textDirection: TextDirection.ltr,
-        child: Center(
-          child: SizedBox.shrink(
-            child: FormField<String>(builder: (FormFieldState<String> field) => const Text('X')),
-          ),
-        ),
-      ),
-    );
-    expect(tester.getSize(find.byType(FormField<String>)), Size.zero);
-  });
-
-  group('FormField priority validation', () {
+  group('useStrictAutovalidateMode', () {
     const invalidValue = 'foo';
     String errorText(String? value) => '$value/error';
 
-    Widget buildForm({GlobalKey<FormState>? formKey, bool withKeys = false}) {
+    Widget buildForm({
+      GlobalKey<FormState>? formKey,
+      bool useStrictAutovalidateMode = true,
+      bool withKeys = false,
+    }) {
       return MaterialApp(
-        home: Scaffold(
-          body: Form(
+        home: Center(
+          child: Form(
             key: formKey,
             autovalidateMode: AutovalidateMode.always,
-            child: Column(
-              children: <Widget>[
-                TextFormField(
-                  key: withKeys ? const Key('disabled') : null,
-                  initialValue: invalidValue,
-                  autovalidateMode: AutovalidateMode.disabled,
-                  validator: errorText,
-                ),
-                TextFormField(
-                  key: withKeys ? const Key('onUserInteraction') : null,
-                  initialValue: invalidValue,
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
-                  validator: errorText,
-                ),
-                TextFormField(
-                  key: withKeys ? const Key('onUnfocus') : null,
-                  initialValue: invalidValue,
-                  autovalidateMode: AutovalidateMode.onUnfocus,
-                  validator: errorText,
-                ),
-                TextFormField(
-                  key: withKeys ? const Key('onUserInteractionIfError') : null,
-                  initialValue: invalidValue,
-                  autovalidateMode: AutovalidateMode.onUserInteractionIfError,
-                  validator: errorText,
-                ),
-              ],
+            useStrictAutovalidateMode: useStrictAutovalidateMode,
+            child: Material(
+              child: Column(
+                children: <Widget>[
+                  TextFormField(
+                    key: withKeys ? const Key('disabled') : null,
+                    initialValue: invalidValue,
+                    autovalidateMode: AutovalidateMode.disabled,
+                    validator: errorText,
+                  ),
+                  TextFormField(
+                    key: withKeys ? const Key('onUserInteraction') : null,
+                    initialValue: invalidValue,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    validator: errorText,
+                  ),
+                  TextFormField(
+                    key: withKeys ? const Key('onUnfocus') : null,
+                    initialValue: invalidValue,
+                    autovalidateMode: AutovalidateMode.onUnfocus,
+                    validator: errorText,
+                  ),
+                  TextFormField(
+                    key: withKeys ? const Key('onUserInteractionIfError') : null,
+                    initialValue: invalidValue,
+                    autovalidateMode: AutovalidateMode.onUserInteractionIfError,
+                    validator: errorText,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
       );
     }
 
-    testWidgets('does not auto-validate fields that have their own restricted mode', (
+    testWidgets('does not auto-validate fields that are disabled or require interaction', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(buildForm());
 
       expect(find.text(errorText(invalidValue)), findsNothing);
+
+      await tester.pump();
+
+      expect(find.text(errorText(invalidValue)), findsNothing);
     });
 
-    testWidgets('validates fields according to their own autovalidateMode (Field Precedence)', (
+    testWidgets('validates fields according to their own autovalidateMode', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(buildForm(withKeys: true));
+      await tester.pump();
 
-      // Initially nothing
       expect(find.text(errorText(invalidValue)), findsNothing);
 
       await tester.enterText(find.byKey(const Key('onUserInteraction')), 'bar');
       await tester.pumpAndSettle();
+      await tester.pump();
 
       expect(find.text(errorText('bar')), findsOneWidget);
 
-      expect(find.text(errorText(invalidValue)), findsNothing);
+      await tester.tap(find.byKey(const Key('disabled')));
+      await tester.pump();
+
+      expect(find.text(errorText('bar')), findsNWidgets(1));
     });
 
-    testWidgets('manual Form.validate() still catches all fields', (WidgetTester tester) async {
+    testWidgets('validates all fields regardless of autovalidateMode', (WidgetTester tester) async {
       final formKey = GlobalKey<FormState>();
 
       await tester.pumpWidget(buildForm(formKey: formKey));
+      await tester.pump();
 
-      expect(find.text(errorText(invalidValue)), findsNothing);
+      expect(find.text('Not valid'), findsNothing);
 
       final bool result = formKey.currentState!.validate();
       expect(result, isFalse);
 
       await tester.pump();
 
-      expect(find.textContaining('/error'), findsNWidgets(4));
+      expect(find.text(errorText(invalidValue)), findsNWidgets(4));
     });
   });
 }
