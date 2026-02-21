@@ -727,9 +727,9 @@ class FormFieldState<T> extends State<FormField<T>> with RestorationMixin {
       AutovalidateMode.onUnfocus => fieldHasInteracted && !_focusNode.hasFocus,
       AutovalidateMode.onUserInteractionIfError => fieldHasInteracted && hasError,
       AutovalidateMode.onUserInteraction =>
-        // If inherited from the [Form], validate when ANY field has been
-        // interacted with. If defined on the field, validate only when
-        // THIS field has been interacted with.
+        // When inherited from the [Form], validation is enabled after
+        // user interaction within the form. When defined on the field,
+        // validation is enabled after user interaction with the field.
         widget.autovalidateMode == null
             ? formHasInteracted || fieldHasInteracted
             : fieldHasInteracted,
