@@ -13,7 +13,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 
 import 'basic.dart';
-import 'binding.dart';
 import 'focus_manager.dart';
 import 'focus_scope.dart';
 import 'framework.dart';
@@ -695,7 +694,7 @@ class FormFieldState<T> extends State<FormField<T>> with RestorationMixin {
       return;
     }
     if (widget.validator != null) {
-      _errorText.value = widget.validator!(_value);
+      _errorText.value = widget.validator?.call(_value);
     } else {
       _errorText.value = null;
     }
@@ -790,13 +789,8 @@ class FormFieldState<T> extends State<FormField<T>> with RestorationMixin {
     if (_formState != newFormState) {
       _formState?._unregister(this);
       _formState = newFormState;
+      _formState?._register(this);
     }
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (widget.enabled && _shouldValidate && !hasError && !isValid) {
-        validate();
-      }
-    });
   }
 
   @override
@@ -810,7 +804,9 @@ class FormFieldState<T> extends State<FormField<T>> with RestorationMixin {
   @protected
   @override
   Widget build(BuildContext context) {
-    _formState?._register(this);
+    if (widget.enabled && _shouldValidate) {
+      _validate();
+    }
 
     final Widget child = Semantics(
       validationResult: hasError
