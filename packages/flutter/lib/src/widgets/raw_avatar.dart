@@ -2,7 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:flutter/widgets.dart';
+import 'basic.dart';
+import 'debug.dart';
+import 'framework.dart';
+import 'icon_theme.dart';
+import 'icon_theme_data.dart';
+import 'implicit_animations.dart';
+import 'media_query.dart';
+import 'text.dart';
 
 // Examples can assume:
 // late String userAvatarUrl;
