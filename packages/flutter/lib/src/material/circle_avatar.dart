@@ -10,6 +10,8 @@ library;
 import 'package:flutter/widgets.dart';
 
 import 'theme.dart';
+// Examples can assume:
+// late String userAvatarUrl;
 
 /// A circular avatar typically used to represent a user.
 ///
