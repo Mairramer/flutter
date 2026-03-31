@@ -2321,9 +2321,9 @@ class _InputDecoratorState extends State<InputDecorator> with TickerProviderStat
         : _InputDecoratorDefaultsM2(context);
     final IconButtonThemeData iconButtonTheme = IconButtonTheme.of(context);
     final TextDirection directionality = Directionality.of(context);
-    final TextDirection effectiveLabelTextDirection = decoration.textDirection ?? directionality;
-    final TextDirection effectiveHintTextDirection =
-        decoration.hintTextDirection ?? effectiveLabelTextDirection;
+    final TextDirection effectiveLabelTextDirection =
+        decoration.labelTextDirection ?? directionality;
+    final TextDirection effectiveHintTextDirection = decoration.hintTextDirection ?? directionality;
 
     final TextStyle labelStyle = _getInlineLabelStyle(themeData, defaults);
     final TextBaseline textBaseline = labelStyle.textBaseline!;
@@ -2580,7 +2580,7 @@ class _InputDecoratorState extends State<InputDecorator> with TickerProviderStat
 
     // The _Decoration widget and _RenderDecoration assume that contentPadding
     // has been resolved to EdgeInsets.
-    final TextDirection textDirection = decoration.textDirection ?? Directionality.of(context);
+    final TextDirection textDirection = Directionality.of(context);
     final bool flipHorizontal = switch (textDirection) {
       TextDirection.ltr => false,
       TextDirection.rtl => true,
@@ -2857,7 +2857,7 @@ class InputDecoration {
     this.alignLabelWithHint,
     this.constraints,
     this.visualDensity,
-    this.textDirection,
+    this.labelTextDirection,
   }) : assert(
          !(label != null && labelText != null),
          'Declaring both label and labelText is not supported.',
@@ -2924,7 +2924,7 @@ class InputDecoration {
     this.border = InputBorder.none,
     this.enabled = true,
     this.constraints,
-    this.textDirection,
+    this.labelTextDirection,
   }) : icon = null,
        iconColor = null,
        label = null,
@@ -3178,17 +3178,11 @@ class InputDecoration {
   /// input field and the current context.
   final TextDirection? hintTextDirection;
 
-  /// The direction to use for both the [labelText] and the [hintText].
-  ///
-  /// This parameter ensures visual consistency across all text elements
-  /// within the input field.
-  ///
-  /// Individual direction settings, such as [hintTextDirection], take
-  /// precedence when provided.
+  /// The direction to use for the [labelText].
   ///
   /// If null, defaults to a value derived from [Directionality] for the
   /// input field and the current context.
-  final TextDirection? textDirection;
+  final TextDirection? labelTextDirection;
 
   /// The maximum number of lines the [hintText] can occupy.
   ///
@@ -3989,7 +3983,7 @@ class InputDecoration {
     BoxConstraints? constraints,
     VisualDensity? visualDensity,
     SemanticsService? semanticsService,
-    TextDirection? textDirection,
+    TextDirection? labelTextDirection,
   }) {
     return InputDecoration(
       icon: icon ?? this.icon,
@@ -4050,7 +4044,7 @@ class InputDecoration {
       alignLabelWithHint: alignLabelWithHint ?? this.alignLabelWithHint,
       constraints: constraints ?? this.constraints,
       visualDensity: visualDensity ?? this.visualDensity,
-      textDirection: textDirection ?? this.textDirection,
+      labelTextDirection: labelTextDirection ?? this.labelTextDirection,
     );
   }
 
@@ -4176,7 +4170,7 @@ class InputDecoration {
         other.alignLabelWithHint == alignLabelWithHint &&
         other.constraints == constraints &&
         other.visualDensity == visualDensity &&
-        other.textDirection == textDirection;
+        other.labelTextDirection == labelTextDirection;
   }
 
   @override
@@ -4240,7 +4234,7 @@ class InputDecoration {
       alignLabelWithHint,
       constraints,
       visualDensity,
-      textDirection,
+      labelTextDirection,
     ];
     return Object.hashAll(values);
   }
