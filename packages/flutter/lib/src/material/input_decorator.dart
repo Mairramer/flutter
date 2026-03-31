@@ -2320,10 +2320,6 @@ class _InputDecoratorState extends State<InputDecorator> with TickerProviderStat
         ? _InputDecoratorDefaultsM3(context)
         : _InputDecoratorDefaultsM2(context);
     final IconButtonThemeData iconButtonTheme = IconButtonTheme.of(context);
-    final TextDirection directionality = Directionality.of(context);
-    final TextDirection effectiveLabelTextDirection =
-        decoration.labelTextDirection ?? directionality;
-    final TextDirection effectiveHintTextDirection = decoration.hintTextDirection ?? directionality;
 
     final TextStyle labelStyle = _getInlineLabelStyle(themeData, defaults);
     final TextBaseline textBaseline = labelStyle.textBaseline!;
@@ -2338,7 +2334,7 @@ class _InputDecoratorState extends State<InputDecorator> with TickerProviderStat
           Text(
             hintText!,
             style: hintStyle,
-            textDirection: effectiveHintTextDirection,
+            textDirection: decoration.hintTextDirection,
             overflow:
                 hintStyle.overflow ??
                 (decoration.hintMaxLines == null ? null : TextOverflow.ellipsis),
@@ -2408,7 +2404,7 @@ class _InputDecoratorState extends State<InputDecorator> with TickerProviderStat
                   decoration.labelText!,
                   overflow: TextOverflow.ellipsis,
                   textAlign: textAlign,
-                  textDirection: effectiveLabelTextDirection,
+                  textDirection: decoration.labelTextDirection,
                 ),
           ),
         ),
@@ -3090,6 +3086,12 @@ class InputDecoration {
   /// {@endtemplate}
   final TextStyle? floatingLabelStyle;
 
+  /// The direction to use for the [labelText].
+  ///
+  /// If null, defaults to a value derived from [Directionality] for the
+  /// input field and the current context.
+  final TextDirection? labelTextDirection;
+
   /// Optional widget that appears below the [InputDecorator.child].
   ///
   /// If non-null, the [helper] is displayed below the [InputDecorator.child], in
@@ -3177,12 +3179,6 @@ class InputDecoration {
   /// If null, defaults to a value derived from [Directionality] for the
   /// input field and the current context.
   final TextDirection? hintTextDirection;
-
-  /// The direction to use for the [labelText].
-  ///
-  /// If null, defaults to a value derived from [Directionality] for the
-  /// input field and the current context.
-  final TextDirection? labelTextDirection;
 
   /// The maximum number of lines the [hintText] can occupy.
   ///
