@@ -3926,6 +3926,7 @@ class InputDecoration {
     String? labelText,
     TextStyle? labelStyle,
     TextStyle? floatingLabelStyle,
+    TextDirection? labelTextDirection,
     Widget? helper,
     String? helperText,
     TextStyle? helperStyle,
@@ -3979,7 +3980,6 @@ class InputDecoration {
     BoxConstraints? constraints,
     VisualDensity? visualDensity,
     SemanticsService? semanticsService,
-    TextDirection? labelTextDirection,
   }) {
     return InputDecoration(
       icon: icon ?? this.icon,
@@ -3988,6 +3988,7 @@ class InputDecoration {
       labelText: labelText ?? this.labelText,
       labelStyle: labelStyle ?? this.labelStyle,
       floatingLabelStyle: floatingLabelStyle ?? this.floatingLabelStyle,
+      labelTextDirection: labelTextDirection ?? this.labelTextDirection,
       helper: helper ?? this.helper,
       helperText: helperText ?? this.helperText,
       helperStyle: helperStyle ?? this.helperStyle,
@@ -4040,7 +4041,6 @@ class InputDecoration {
       alignLabelWithHint: alignLabelWithHint ?? this.alignLabelWithHint,
       constraints: constraints ?? this.constraints,
       visualDensity: visualDensity ?? this.visualDensity,
-      labelTextDirection: labelTextDirection ?? this.labelTextDirection,
     );
   }
 
@@ -4114,6 +4114,7 @@ class InputDecoration {
         other.labelText == labelText &&
         other.labelStyle == labelStyle &&
         other.floatingLabelStyle == floatingLabelStyle &&
+        other.labelTextDirection == labelTextDirection &&
         other.helper == helper &&
         other.helperText == helperText &&
         other.helperStyle == helperStyle &&
@@ -4165,8 +4166,7 @@ class InputDecoration {
         other.semanticCounterText == semanticCounterText &&
         other.alignLabelWithHint == alignLabelWithHint &&
         other.constraints == constraints &&
-        other.visualDensity == visualDensity &&
-        other.labelTextDirection == labelTextDirection;
+        other.visualDensity == visualDensity;
   }
 
   @override
@@ -4177,6 +4177,7 @@ class InputDecoration {
       label,
       labelText,
       floatingLabelStyle,
+      labelTextDirection,
       labelStyle,
       helper,
       helperText,
@@ -4230,7 +4231,6 @@ class InputDecoration {
       alignLabelWithHint,
       constraints,
       visualDensity,
-      labelTextDirection,
     ];
     return Object.hashAll(values);
   }
