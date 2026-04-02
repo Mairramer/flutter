@@ -9,6 +9,7 @@ library;
 
 import 'package:flutter/widgets.dart';
 
+import 'constants.dart';
 import 'theme.dart';
 // Examples can assume:
 // late String userAvatarUrl;
@@ -67,7 +68,9 @@ class CircleAvatar extends StatelessWidget {
     this.radius,
     this.minRadius,
     this.maxRadius,
-  }) : assert(radius == null || (minRadius == null && maxRadius == null));
+  }) : assert(radius == null || (minRadius == null && maxRadius == null)),
+       assert(backgroundImage != null || onBackgroundImageError == null),
+       assert(foregroundImage != null || onForegroundImageError == null);
 
   /// {@macro flutter.widgets.RawAvatar.child}
   final Widget? child;
@@ -174,23 +177,43 @@ class CircleAvatar extends StatelessWidget {
       };
     }
 
-    final double? size = radius != null ? radius! * 2 : null;
-    final double? minSize = minRadius != null ? minRadius! * 2 : null;
-    final double? maxSize = maxRadius != null ? maxRadius! * 2 : null;
+    Widget? effectiveChild = child;
+    if (child != null) {
+      effectiveChild = MediaQuery.withNoTextScaling(
+        child: IconTheme(
+          data: theme.iconTheme.copyWith(color: textStyle.color),
+          child: DefaultTextStyle(style: textStyle, child: child!),
+        ),
+      );
+    }
 
     return RawAvatar(
       backgroundColor: effectiveBackgroundColor,
-      textStyle: textStyle,
-      iconTheme: theme.iconTheme.copyWith(color: textStyle.color),
-      size: size,
-      minSize: minSize,
-      maxSize: maxSize,
+      constraints: _constraints,
       backgroundImage: backgroundImage,
       foregroundImage: foregroundImage,
       onBackgroundImageError: onBackgroundImageError,
       onForegroundImageError: onForegroundImageError,
-      boxShape: BoxShape.circle,
-      child: child,
+
+      duration: kThemeChangeDuration,
+      child: effectiveChild,
+    );
+  }
+
+  BoxConstraints? get _constraints {
+    final double? size = radius != null ? radius! * 2 : null;
+    final double? minSize = minRadius != null ? minRadius! * 2 : null;
+    final double? maxSize = maxRadius != null ? maxRadius! * 2 : null;
+
+    if (size != null) {
+      return BoxConstraints.tightFor(width: size, height: size);
+    }
+
+    return BoxConstraints(
+      minWidth: minSize ?? 0.0,
+      minHeight: minSize ?? 0.0,
+      maxWidth: maxSize ?? double.infinity,
+      maxHeight: maxSize ?? double.infinity,
     );
   }
 }

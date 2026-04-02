@@ -32,20 +32,6 @@ void main() {
     expect(decoration.color, backgroundColor);
   });
 
-  testWidgets('RawAvatar renders icon with iconTheme', (tester) async {
-    const iconTheme = IconThemeData(size: 32);
-
-    await tester.pumpWidget(
-      wrap(
-        child: const RawAvatar(iconTheme: iconTheme, child: Icon(IconData(0xe491))), // Icon person
-      ),
-    );
-
-    final IconTheme iconThemeWidget = tester.widget<IconTheme>(find.byType(IconTheme));
-
-    expect(iconThemeWidget.data.size, 32);
-  });
-
   testWidgets('RawAvatar applies ShapeDecoration and ClipPath when shape is provided', (
     tester,
   ) async {
@@ -69,7 +55,7 @@ void main() {
       wrap(
         child: RawAvatar(
           backgroundImage: MemoryImage(Uint8List.fromList(kTransparentImage)),
-          size: 50.0,
+          constraints: const BoxConstraints.tightFor(width: 50.0, height: 50.0),
         ),
       ),
     );
@@ -86,7 +72,7 @@ void main() {
       wrap(
         child: RawAvatar(
           foregroundImage: MemoryImage(Uint8List.fromList(kBlueRectPng)),
-          size: 50.0,
+          constraints: const BoxConstraints.tightFor(width: 50.0, height: 50.0),
         ),
       ),
     );
@@ -110,7 +96,7 @@ void main() {
           child: RawAvatar(
             foregroundImage: errorImage,
             backgroundImage: MemoryImage(Uint8List.fromList(kBlueRectPng)),
-            size: 50.0,
+            constraints: const BoxConstraints.tightFor(width: 50.0, height: 50.0),
             onForegroundImageError: (_, _) => caughtForegroundImageError = true,
           ),
         ),
@@ -123,58 +109,6 @@ void main() {
     final child = box.child! as RenderDecoratedBox;
     final decoration = child.decoration as BoxDecoration;
     expect(decoration.image!.fit, equals(BoxFit.cover));
-  });
-
-  testWidgets('RawAvatar respects minSize', (WidgetTester tester) async {
-    const backgroundColor = Color(0xFF0D47A1);
-    await tester.pumpWidget(
-      wrap(
-        child: const UnconstrainedBox(
-          child: RawAvatar(backgroundColor: backgroundColor, minSize: 50.0, child: Text('Z')),
-        ),
-      ),
-    );
-
-    final RenderConstrainedBox box = tester.renderObject(find.byType(RawAvatar));
-    expect(box.size, equals(const Size(50.0, 50.0)));
-    final child = box.child! as RenderDecoratedBox;
-    final decoration = child.decoration as BoxDecoration;
-    expect(decoration.color, equals(backgroundColor));
-  });
-
-  testWidgets('RawAvatar respects maxSize', (WidgetTester tester) async {
-    const backgroundColor = Color(0xFF0D47A1);
-    await tester.pumpWidget(
-      wrap(
-        child: const RawAvatar(backgroundColor: backgroundColor, maxSize: 50.0, child: Text('Z')),
-      ),
-    );
-
-    final RenderConstrainedBox box = tester.renderObject(find.byType(RawAvatar));
-    expect(box.size, equals(const Size(50.0, 50.0)));
-    final child = box.child! as RenderDecoratedBox;
-    final decoration = child.decoration as BoxDecoration;
-    expect(decoration.color, equals(backgroundColor));
-  });
-
-  testWidgets('RawAvatar respects setting both minSize and maxSize', (WidgetTester tester) async {
-    const backgroundColor = Color(0xFF0D47A1);
-    await tester.pumpWidget(
-      wrap(
-        child: const RawAvatar(
-          backgroundColor: backgroundColor,
-          maxSize: 50.0,
-          minSize: 50.0,
-          child: Text('Z'),
-        ),
-      ),
-    );
-
-    final RenderConstrainedBox box = tester.renderObject(find.byType(RawAvatar));
-    expect(box.size, equals(const Size(50.0, 50.0)));
-    final child = box.child! as RenderDecoratedBox;
-    final decoration = child.decoration as BoxDecoration;
-    expect(decoration.color, equals(backgroundColor));
   });
 
   testWidgets('RawAvatar renders at zero area', (WidgetTester tester) async {

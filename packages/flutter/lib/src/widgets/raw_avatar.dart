@@ -5,10 +5,7 @@
 import 'basic.dart';
 import 'debug.dart';
 import 'framework.dart';
-import 'icon_theme.dart';
-import 'icon_theme_data.dart';
 import 'implicit_animations.dart';
-import 'media_query.dart';
 import 'text.dart';
 
 // Examples can assume:
@@ -65,20 +62,13 @@ class RawAvatar extends StatelessWidget {
     this.foregroundImage,
     this.onBackgroundImageError,
     this.onForegroundImageError,
-    this.size,
-    this.minSize,
-    this.maxSize,
+    this.constraints,
     this.shape,
-    this.textStyle,
-    this.iconTheme,
     this.boxShape,
-    this.borderRadius,
-    this.duration = const Duration(milliseconds: 200),
-  }) : assert(size == null || (minSize == null && maxSize == null)),
-       assert(backgroundImage != null || onBackgroundImageError == null),
+    this.duration,
+  }) : assert(backgroundImage != null || onBackgroundImageError == null),
        assert(foregroundImage != null || onForegroundImageError == null),
-       assert(shape == null || boxShape == null),
-       assert(boxShape != BoxShape.circle || borderRadius == null);
+       assert(shape == null || boxShape == null);
 
   /// {@template flutter.widgets.RawAvatar.child}
   /// The widget below this widget in the tree.
@@ -96,21 +86,6 @@ class RawAvatar extends StatelessWidget {
   /// When this value changes, the avatar animates smoothly to the new color.
   /// {@endtemplate}
   final Color? backgroundColor;
-
-  /// {@template flutter.widgets.RawAvatar.textStyle}
-  /// The default text style for text displayed inside the avatar.
-  ///
-  /// If the [child] is a [Text] widget, this style will be used as the
-  /// default text style.
-  /// {@endtemplate}
-  final TextStyle? textStyle;
-
-  /// {@template flutter.widgets.RawAvatar.iconTheme}
-  /// The icon theme used for icons inside the avatar.
-  ///
-  /// This allows customizing the size and color of icons used as [child].
-  /// {@endtemplate}
-  final IconThemeData? iconTheme;
 
   /// {@template flutter.widgets.RawAvatar.backgroundImage}
   /// The background image displayed inside the avatar.
@@ -148,74 +123,42 @@ class RawAvatar extends StatelessWidget {
   final ImageErrorListener? onForegroundImageError;
 
   /// {@template flutter.widgets.RawAvatar.shape}
-  /// The shape used to paint the avatar.
+  /// The shape used to define the avatar's outline.
   ///
   /// If provided, the avatar is painted using a [ShapeDecoration] with the
-  /// given [ShapeBorder].
+  /// given [ShapeBorder]. This takes precedence over [boxShape].
   ///
-  /// When this is specified, [boxShape] and [borderRadius] must be null.
-  ///
-  /// If none of [shape], [boxShape], or [borderRadius] are provided, the avatar
-  /// defaults to a circular shape.
+  /// Use this for custom shapes, such as [StarBorder] or a
+  /// [RoundedRectangleBorder] with specific corner radii.
   /// {@endtemplate}
   final ShapeBorder? shape;
 
   /// {@template flutter.widgets.RawAvatar.boxShape}
-  /// The basic shape used to paint the avatar when using a [BoxDecoration].
+  /// The basic shape used to paint the avatar when [shape] is null.
   ///
-  /// If this is [BoxShape.circle], the avatar is rendered as a circle.
+  /// If this is [BoxShape.circle] (the default), the avatar is rendered
+  /// as a circle.
   ///
   /// If this is [BoxShape.rectangle], the avatar is rendered as a rectangle.
-  /// In this case, [borderRadius] may also be provided to create rounded
-  /// rectangle corners.
   ///
-  /// If [shape] is provided, this value is ignored.
+  /// This property is ignored if [shape] is provided.
   /// {@endtemplate}
   final BoxShape? boxShape;
 
-  /// {@template flutter.widgets.RawAvatar.borderRadius}
-  /// The border radius used when [boxShape] is [BoxShape.rectangle].
-  ///
-  /// This allows creating rounded rectangle avatars.
-  ///
-  /// Must be null if [boxShape] is [BoxShape.circle].
-  ///
-  /// If [shape] is provided, this value is ignored.
-  /// {@endtemplate}
-  final BorderRadius? borderRadius;
-
   /// The duration of the animation for changes in properties.
-  final Duration duration;
+  ///
+  /// If null, defaults to `const Duration(milliseconds: 200)`.
+  final Duration? duration;
 
-  /// {@template flutter.widgets.RawAvatar.size}
-  /// The size of the avatar in logical pixels.
+  /// {@template flutter.widgets.RawAvatar.constraints}
+  /// The size constraints for the avatar in logical pixels.
   ///
-  /// If [size] is specified, then neither [minSize] nor [maxSize] may be
-  /// specified. Specifying [size] is equivalent to specifying both [minSize]
-  /// and [maxSize] with the same value.
+  /// If [constraints] is specified, it determines the minimum and maximum dimensions
+  /// of the avatar.
   ///
-  /// If neither [size], [minSize], nor [maxSize] are specified, the avatar
-  /// defaults to 40 logical pixels.
+  /// If [constraints] is null, the avatar defaults to a fixed size of 40 logical pixels.
   /// {@endtemplate}
-  final double? size;
-
-  /// {@template flutter.widgets.RawAvatar.minSize}
-  /// The minimum size of the avatar in logical pixels.
-  ///
-  /// If [minSize] is specified, then [size] must not also be specified.
-  ///
-  /// Defaults to zero.
-  /// {@endtemplate}
-  final double? minSize;
-
-  /// {@template flutter.widgets.RawAvatar.maxSize}
-  /// The maximum size of the avatar in logical pixels.
-  ///
-  /// If [maxSize] is specified, then [size] must not also be specified.
-  ///
-  /// Defaults to [double.infinity].
-  /// {@endtemplate}
-  final double? maxSize;
+  final BoxConstraints? constraints;
 
   // Default size if nothing is specified.
   static const double _defaultSize = 40.0;
@@ -226,20 +169,24 @@ class RawAvatar extends StatelessWidget {
   // Default max if only min is specified.
   static const double _defaultMaxSize = double.infinity;
 
-  bool get _hasExplicitSize => size != null || minSize != null || maxSize != null;
-
-  double get _effectiveMinSize {
-    if (!_hasExplicitSize) {
-      return _defaultSize;
+  BoxConstraints get _effectiveConstraints {
+    // 1. Caso base: Sem nenhuma instrução, usa o tamanho fixo padrão.
+    if (constraints == null) {
+      return const BoxConstraints.tightFor(width: _defaultSize, height: _defaultSize);
     }
-    return size ?? minSize ?? _defaultMinSize;
-  }
 
-  double get _effectiveMaxSize {
-    if (!_hasExplicitSize) {
-      return _defaultSize;
+    final bool hasMin = constraints!.minWidth != 0.0 || constraints!.minHeight != 0.0;
+    final bool hasMax =
+        constraints!.maxWidth != double.infinity || constraints!.maxHeight != double.infinity;
+
+    if (!hasMin && !hasMax) {
+      return const BoxConstraints.tightFor(width: _defaultSize, height: _defaultSize);
     }
-    return size ?? maxSize ?? _defaultMaxSize;
+
+    final double min = hasMin ? constraints!.minWidth : _defaultMinSize;
+    final double max = hasMax ? constraints!.maxWidth : _defaultMaxSize;
+
+    return BoxConstraints(minWidth: min, minHeight: min, maxWidth: max, maxHeight: max);
   }
 
   @override
@@ -249,7 +196,6 @@ class RawAvatar extends StatelessWidget {
     final Decoration decoration = _effectiveDecoration(
       shape: shape,
       boxShape: boxShape,
-      borderRadius: borderRadius,
       color: backgroundColor,
       image: backgroundImage,
       onError: onBackgroundImageError,
@@ -259,32 +205,17 @@ class RawAvatar extends StatelessWidget {
         ? _effectiveDecoration(
             shape: shape,
             boxShape: boxShape,
-            borderRadius: borderRadius,
             image: foregroundImage,
             onError: onForegroundImageError,
           )
         : null;
 
     Widget avatar = AnimatedContainer(
-      duration: duration,
-      constraints: BoxConstraints(
-        minHeight: _effectiveMinSize,
-        minWidth: _effectiveMinSize,
-        maxHeight: _effectiveMaxSize,
-        maxWidth: _effectiveMaxSize,
-      ),
+      duration: duration ?? const Duration(milliseconds: 200),
+      constraints: _effectiveConstraints,
       decoration: decoration,
       foregroundDecoration: foregroundDecoration,
-      child: child == null
-          ? null
-          : Center(
-              child: MediaQuery.withNoTextScaling(
-                child: IconTheme(
-                  data: iconTheme ?? const IconThemeData(),
-                  child: DefaultTextStyle(style: textStyle ?? const TextStyle(), child: child!),
-                ),
-              ),
-            ),
+      child: child == null ? null : Center(child: child),
     );
 
     if (shape != null) {
@@ -300,7 +231,6 @@ class RawAvatar extends StatelessWidget {
   Decoration _effectiveDecoration({
     ShapeBorder? shape,
     BoxShape? boxShape,
-    BorderRadius? borderRadius,
     Color? color,
     ImageProvider? image,
     ImageErrorListener? onError,
@@ -313,11 +243,6 @@ class RawAvatar extends StatelessWidget {
       return ShapeDecoration(shape: shape, color: color, image: decorationImage);
     }
 
-    return BoxDecoration(
-      shape: boxShape ?? BoxShape.circle,
-      borderRadius: borderRadius,
-      color: color,
-      image: decorationImage,
-    );
+    return BoxDecoration(shape: boxShape ?? BoxShape.circle, color: color, image: decorationImage);
   }
 }
