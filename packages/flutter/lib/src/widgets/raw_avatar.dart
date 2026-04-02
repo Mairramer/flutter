@@ -19,10 +19,9 @@ import 'text.dart';
 /// If [foregroundImage] fails then [backgroundImage] is used. If
 /// [backgroundImage] fails too, [backgroundColor] is used.
 ///
-/// The [onBackgroundImageError] parameter must be null if the [backgroundImage]
-/// is null.
-/// The [onForegroundImageError] parameter must be null if the [foregroundImage]
-/// is null.
+/// The [onBackgroundImageError] callback is ignored if [backgroundImage] is null.
+///
+/// The [onForegroundImageError] callback is ignored if [foregroundImage] is null.
 ///
 /// {@tool snippet}
 ///
@@ -111,14 +110,14 @@ class RawAvatar extends StatelessWidget {
   /// {@template flutter.widgets.RawAvatar.onBackgroundImageError}
   /// Called when an error occurs while loading [backgroundImage].
   ///
-  /// Must be null if [backgroundImage] is null.
+  /// This callback is only used if [backgroundImage] is provided.
   /// {@endtemplate}
   final ImageErrorListener? onBackgroundImageError;
 
   /// {@template flutter.widgets.RawAvatar.onForegroundImageError}
   /// Called when an error occurs while loading [foregroundImage].
   ///
-  /// Must be null if [foregroundImage] is null.
+  /// This callback is only used if [foregroundImage] is provided.
   /// {@endtemplate}
   final ImageErrorListener? onForegroundImageError;
 
