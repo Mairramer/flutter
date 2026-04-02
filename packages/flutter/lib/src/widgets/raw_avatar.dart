@@ -169,7 +169,6 @@ class RawAvatar extends StatelessWidget {
   static const double _defaultMaxSize = double.infinity;
 
   BoxConstraints get _effectiveConstraints {
-    // 1. Caso base: Sem nenhuma instrução, usa o tamanho fixo padrão.
     if (constraints == null) {
       return const BoxConstraints.tightFor(width: _defaultSize, height: _defaultSize);
     }
