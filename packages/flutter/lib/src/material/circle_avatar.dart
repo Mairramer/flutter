@@ -194,7 +194,6 @@ class CircleAvatar extends StatelessWidget {
       foregroundImage: foregroundImage,
       onBackgroundImageError: onBackgroundImageError,
       onForegroundImageError: onForegroundImageError,
-
       duration: kThemeChangeDuration,
       child: effectiveChild,
     );
