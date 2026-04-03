@@ -128,19 +128,14 @@ class RawAvatar extends StatelessWidget {
   /// given [ShapeBorder]. This takes precedence over [boxShape].
   ///
   /// Use this for custom shapes, such as [StarBorder] or a
-  /// [RoundedRectangleBorder] with specific corner radii.
+  /// [RoundedRectangleBorder].
   /// {@endtemplate}
   final ShapeBorder? shape;
 
   /// {@template flutter.widgets.RawAvatar.boxShape}
-  /// The basic shape used to paint the avatar when [shape] is null.
+  /// The shape used to paint the avatar.
   ///
-  /// If this is [BoxShape.circle] (the default), the avatar is rendered
-  /// as a circle.
-  ///
-  /// If this is [BoxShape.rectangle], the avatar is rendered as a rectangle.
-  ///
-  /// This property is ignored if [shape] is provided.
+  /// Defaults to [BoxShape.circle].
   /// {@endtemplate}
   final BoxShape? boxShape;
 
