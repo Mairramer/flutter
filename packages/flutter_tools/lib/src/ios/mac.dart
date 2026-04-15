@@ -23,7 +23,6 @@ import '../darwin/darwin.dart';
 import '../device.dart';
 import '../features.dart';
 import '../flutter_manifest.dart';
-import '../flutter_plugins.dart';
 import '../globals.dart' as globals;
 import '../macos/cocoapod_utils.dart';
 import '../macos/swift_package_manager.dart';
@@ -251,6 +250,18 @@ Future<XcodeBuildResult> buildXcodeProject({
       '4. If you are not using completely custom build configurations, name the newly created configuration ${buildInfo.modeName}.',
     );
     return XcodeBuildResult(success: false);
+  } else if (buildInfo.flavor != null &&
+      !configuration.toLowerCase().contains(buildInfo.flavor!.toLowerCase())) {
+    final String expectedConfiguration = XcodeProjectInfo.expectedBuildConfigurationFor(
+      buildInfo,
+      scheme,
+    );
+    globals.printWarning(
+      'Unable to find "$expectedConfiguration" build configuration for flavor "${buildInfo.flavor}".\n'
+      'Using "$configuration" configuration instead.\n'
+      '  To optionally support custom build settings for this flavor, consider adding the "$expectedConfiguration" build configuration to your Xcode project.\n'
+      '  Visit https://docs.flutter.dev/deployment/flavors-ios for instructions.',
+    );
   }
 
   final FlutterManifest manifest = app.project.parent.manifest;
@@ -1163,7 +1174,7 @@ Future<bool> _handleIssues(
       for (final module in missingModules) {
         if (await _isPluginSwiftPackageOnly(
           platform: platform,
-          project: project,
+          project: xcodeProject,
           pluginName: module,
           fileSystem: fileSystem,
         )) {
@@ -1224,11 +1235,11 @@ Future<bool> _simulatorSupportsIntel(Device device) async {
 /// Returns true if a Package.swift is found for the plugin and a podspec is not.
 Future<bool> _isPluginSwiftPackageOnly({
   required FlutterDarwinPlatform platform,
-  required FlutterProject project,
+  required XcodeBasedProject project,
   required String pluginName,
   required FileSystem fileSystem,
 }) async {
-  final List<Plugin> plugins = await findPlugins(project);
+  final List<Plugin> plugins = await project.getPlugins();
   final Plugin? matched = plugins
       .where(
         (Plugin plugin) =>
