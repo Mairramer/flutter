@@ -63,11 +63,9 @@ class RawAvatar extends StatelessWidget {
     this.onForegroundImageError,
     this.constraints,
     this.shape,
-    this.boxShape,
     this.duration,
   }) : assert(backgroundImage != null || onBackgroundImageError == null),
-       assert(foregroundImage != null || onForegroundImageError == null),
-       assert(shape == null || boxShape == null);
+       assert(foregroundImage != null || onForegroundImageError == null);
 
   /// {@template flutter.widgets.RawAvatar.child}
   /// The widget below this widget in the tree.
@@ -125,19 +123,13 @@ class RawAvatar extends StatelessWidget {
   /// The shape used to define the avatar's outline.
   ///
   /// If provided, the avatar is painted using a [ShapeDecoration] with the
-  /// given [ShapeBorder]. This takes precedence over [boxShape].
+  /// given [ShapeBorder]. If not provided, the avatar defaults to a circular shape using a [BoxDecoration]
+  /// with [BoxShape.circle].
   ///
   /// Use this for custom shapes, such as [StarBorder] or a
   /// [RoundedRectangleBorder].
   /// {@endtemplate}
   final ShapeBorder? shape;
-
-  /// {@template flutter.widgets.RawAvatar.boxShape}
-  /// The shape used to paint the avatar.
-  ///
-  /// Defaults to [BoxShape.circle].
-  /// {@endtemplate}
-  final BoxShape? boxShape;
 
   /// The duration of the animation for changes in properties.
   ///
@@ -188,7 +180,6 @@ class RawAvatar extends StatelessWidget {
 
     final Decoration decoration = _effectiveDecoration(
       shape: shape,
-      boxShape: boxShape,
       color: backgroundColor,
       image: backgroundImage,
       onError: onBackgroundImageError,
@@ -197,7 +188,6 @@ class RawAvatar extends StatelessWidget {
     final Decoration? foregroundDecoration = foregroundImage != null
         ? _effectiveDecoration(
             shape: shape,
-            boxShape: boxShape,
             image: foregroundImage,
             onError: onForegroundImageError,
           )
@@ -223,7 +213,6 @@ class RawAvatar extends StatelessWidget {
 
   Decoration _effectiveDecoration({
     ShapeBorder? shape,
-    BoxShape? boxShape,
     Color? color,
     ImageProvider? image,
     ImageErrorListener? onError,
@@ -236,6 +225,8 @@ class RawAvatar extends StatelessWidget {
       return ShapeDecoration(shape: shape, color: color, image: decorationImage);
     }
 
-    return BoxDecoration(shape: boxShape ?? BoxShape.circle, color: color, image: decorationImage);
+    // The default shape is a circle, so if no shape is provided, we use a BoxDecoration with
+    // BoxShape.circle to ensure the avatar is circular.
+    return BoxDecoration(shape: BoxShape.circle, color: color, image: decorationImage);
   }
 }
