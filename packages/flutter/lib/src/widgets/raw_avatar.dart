@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
+
 import 'basic.dart';
 import 'debug.dart';
 import 'framework.dart';
@@ -64,6 +67,9 @@ class RawAvatar extends StatelessWidget {
     this.constraints,
     this.shape,
     this.duration,
+    this.cursor,
+    this.onEnter,
+    this.onExit,
   }) : assert(backgroundImage != null || onBackgroundImageError == null),
        assert(foregroundImage != null || onForegroundImageError == null);
 
@@ -146,6 +152,18 @@ class RawAvatar extends StatelessWidget {
   /// {@endtemplate}
   final BoxConstraints? constraints;
 
+  /// The cursor that will be shown when hovering over the avatar.
+  ///
+  /// If null, defaults to [SystemMouseCursors.click] on web and
+  /// [MouseCursor.defer] on other platforms.
+  final MouseCursor? cursor;
+
+  /// Triggered when a mouse pointer enters the avatar's region.
+  final PointerEnterEventListener? onEnter;
+
+  /// Triggered when a mouse pointer exits the avatar's region.
+  final PointerExitEventListener? onExit;
+
   // Default size if nothing is specified.
   static const double _defaultSize = 40.0;
 
@@ -207,8 +225,12 @@ class RawAvatar extends StatelessWidget {
         child: avatar,
       );
     }
-
-    return avatar;
+    return MouseRegion(
+      cursor: cursor ?? (kIsWeb ? SystemMouseCursors.click : MouseCursor.defer),
+      onEnter: onEnter,
+      onExit: onExit,
+      child: avatar,
+    );
   }
 
   Decoration _effectiveDecoration({
