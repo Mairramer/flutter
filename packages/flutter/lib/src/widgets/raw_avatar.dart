@@ -4,6 +4,7 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/src/widgets/gesture_detector.dart';
 
 import 'basic.dart';
 import 'debug.dart';
@@ -70,6 +71,7 @@ class RawAvatar extends StatelessWidget {
     this.cursor,
     this.onEnter,
     this.onExit,
+    this.onTap,
   }) : assert(backgroundImage != null || onBackgroundImageError == null),
        assert(foregroundImage != null || onForegroundImageError == null);
 
@@ -154,9 +156,11 @@ class RawAvatar extends StatelessWidget {
 
   /// The cursor that will be shown when hovering over the avatar.
   ///
-  /// If null, defaults to [SystemMouseCursors.click] on web and
-  /// [MouseCursor.defer] on other platforms.
+  /// If null, defaults to [SystemMouseCursors.basic].
   final MouseCursor? cursor;
+
+  /// Called when the user taps or clicks the avatar.
+  final VoidCallback? onTap;
 
   /// Triggered when a mouse pointer enters the avatar's region.
   final PointerEnterEventListener? onEnter;
@@ -217,10 +221,16 @@ class RawAvatar extends StatelessWidget {
       decoration: decoration,
       foregroundDecoration: foregroundDecoration,
       child: MouseRegion(
-        cursor: cursor ?? (kIsWeb ? SystemMouseCursors.click : MouseCursor.defer),
+        cursor:
+            cursor ??
+            (onTap != null && kIsWeb ? SystemMouseCursors.click : SystemMouseCursors.basic),
         onEnter: onEnter,
         onExit: onExit,
-        child: child == null ? null : Center(child: child),
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: onTap,
+          child: child == null ? null : Center(child: child),
+        ),
       ),
     );
 
