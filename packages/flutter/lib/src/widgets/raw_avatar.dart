@@ -216,7 +216,12 @@ class RawAvatar extends StatelessWidget {
       constraints: _effectiveConstraints,
       decoration: decoration,
       foregroundDecoration: foregroundDecoration,
-      child: child == null ? null : Center(child: child),
+      child: MouseRegion(
+        cursor: cursor ?? (kIsWeb ? SystemMouseCursors.click : MouseCursor.defer),
+        onEnter: onEnter,
+        onExit: onExit,
+        child: child == null ? null : Center(child: child),
+      ),
     );
 
     if (shape != null) {
@@ -225,12 +230,8 @@ class RawAvatar extends StatelessWidget {
         child: avatar,
       );
     }
-    return MouseRegion(
-      cursor: cursor ?? (kIsWeb ? SystemMouseCursors.click : MouseCursor.defer),
-      onEnter: onEnter,
-      onExit: onExit,
-      child: avatar,
-    );
+
+    return avatar;
   }
 
   Decoration _effectiveDecoration({
