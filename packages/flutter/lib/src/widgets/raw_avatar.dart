@@ -67,6 +67,7 @@ class RawAvatar extends StatelessWidget {
     this.onForegroundImageError,
     this.constraints,
     this.shape,
+    this.clipBehavior = Clip.none,
     this.duration,
     this.cursor,
     this.onEnter,
@@ -139,6 +140,11 @@ class RawAvatar extends StatelessWidget {
   /// {@endtemplate}
   final ShapeBorder? shape;
 
+  /// The clip behavior applied to the avatar when [shape] is provided.
+  ///
+  ///  If null, defaults to [Clip.none].
+  final Clip clipBehavior;
+
   /// The duration of the animation for changes in properties.
   ///
   /// If null, defaults to `const Duration(milliseconds: 200)`.
@@ -190,10 +196,12 @@ class RawAvatar extends StatelessWidget {
       return const BoxConstraints.tightFor(width: _defaultSize, height: _defaultSize);
     }
 
-    final double min = hasMin ? constraints!.minWidth : _defaultMinSize;
-    final double max = hasMax ? constraints!.maxWidth : _defaultMaxSize;
-
-    return BoxConstraints(minWidth: min, minHeight: min, maxWidth: max, maxHeight: max);
+    return BoxConstraints(
+      minWidth: hasMin ? constraints!.minWidth : _defaultMinSize,
+      minHeight: hasMin ? constraints!.minHeight : _defaultMinSize,
+      maxWidth: hasMax ? constraints!.maxWidth : _defaultMaxSize,
+      maxHeight: hasMax ? constraints!.maxHeight : _defaultMaxSize,
+    );
   }
 
   @override
@@ -236,6 +244,7 @@ class RawAvatar extends StatelessWidget {
 
     if (shape != null) {
       avatar = ClipPath(
+        clipBehavior: clipBehavior,
         clipper: ShapeBorderClipper(shape: shape!),
         child: avatar,
       );
