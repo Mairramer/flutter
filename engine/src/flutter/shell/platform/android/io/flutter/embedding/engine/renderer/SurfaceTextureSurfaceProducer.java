@@ -10,12 +10,14 @@ import android.view.Surface;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+import io.flutter.Log;
 import io.flutter.embedding.engine.FlutterJNI;
 import io.flutter.view.TextureRegistry;
 
 /** Uses a {@link android.graphics.SurfaceTexture} to populate the texture registry. */
 final class SurfaceTextureSurfaceProducer
     implements TextureRegistry.SurfaceProducer, TextureRegistry.GLTextureConsumer {
+  private static final String TAG = "SurfaceTextureSurfaceProducer";
   private final long id;
   private int requestBufferWidth;
   private int requestedBufferHeight;
@@ -116,6 +118,10 @@ final class SurfaceTextureSurfaceProducer
 
   @Override
   public void scheduleFrame() {
+    if (!flutterJNI.isAttached()) {
+      Log.w(TAG, "Ignoring scheduleFrame: FlutterJNI is not attached to native.");
+      return;
+    }
     flutterJNI.markTextureFrameAvailable(id);
   }
 }

@@ -1361,6 +1361,10 @@ public class FlutterRenderer implements TextureRegistry {
 
   @VisibleForTesting
   /* package */ void scheduleEngineFrame() {
+    if (!flutterJNI.isAttached()) {
+      Log.w(TAG, "Ignoring scheduleEngineFrame: FlutterJNI is not attached to native.");
+      return;
+    }
     flutterJNI.scheduleFrame();
   }
 

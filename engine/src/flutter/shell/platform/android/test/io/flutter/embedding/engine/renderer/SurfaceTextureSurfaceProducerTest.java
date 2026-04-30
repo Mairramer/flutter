@@ -10,7 +10,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -160,5 +162,21 @@ public final class SurfaceTextureSurfaceProducerTest {
     Surface secondSurface = producer.getSurface();
 
     assertEquals(firstSurface, secondSurface);
+  }
+  @Test
+  public void scheduleFrame_doesNotCrashWhenJniNotAttached() {
+    // Setup: JNI is not attached (engine destroyed).
+    when(fakeJNI.isAttached()).thenReturn(false);
+    final FlutterRenderer flutterRenderer = new FlutterRenderer(fakeJNI);
+    final Handler handler = new Handler(Looper.getMainLooper());
+    final SurfaceTextureSurfaceProducer producer =
+        new SurfaceTextureSurfaceProducer(
+            0, handler, fakeJNI, flutterRenderer.registerSurfaceTexture(new SurfaceTexture(0)));
+
+    // Execute: scheduleFrame should be a no-op, not throw RuntimeException.
+    producer.scheduleFrame();
+
+    // Verify: markTextureFrameAvailable on FlutterJNI was never called.
+    verify(fakeJNI, never()).markTextureFrameAvailable(0);
   }
 }

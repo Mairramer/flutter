@@ -639,7 +639,11 @@ public class PlatformViewsController2 implements PlatformViewsAccessibilityDeleg
         // guarantee there is another frame coming (if, say, the app has a static
         // layout). So we schedule one to ensure the crop is rendered properly.
         // See https://github.com/flutter/flutter/issues/175546.
-        flutterJNI.scheduleFrame();
+        if (flutterJNI != null && flutterJNI.isAttached()) {
+          flutterJNI.scheduleFrame();
+        } else {
+          Log.w(TAG, "Ignoring scheduleFrame in surfaceCreated: FlutterJNI is not attached to native.");
+        }
         viewsWithPendingSurfaceCallback.remove(viewId);
         surfaceView.getHolder().removeCallback(this);
       }

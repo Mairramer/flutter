@@ -1074,4 +1074,16 @@ public class FlutterRendererTest {
     assertFalse(imageReaderProducer1.notifiedDestroy);
     assertFalse(imageReaderProducer2.notifiedDestroy);
   }
+  @Test
+  public void scheduleEngineFrame_doesNotCrashWhenJniNotAttached() {
+    // Setup: Mark JNI as not attached (engine destroyed).
+    engineRule.setJniIsAttached(false);
+    FlutterRenderer flutterRenderer = engineRule.getFlutterEngine().getRenderer();
+
+    // Execute: scheduleEngineFrame should be a no-op, not throw RuntimeException.
+    flutterRenderer.scheduleEngineFrame();
+
+    // Verify: scheduleFrame on FlutterJNI was never called.
+    verify(fakeFlutterJNI, never()).scheduleFrame();
+  }
 }
