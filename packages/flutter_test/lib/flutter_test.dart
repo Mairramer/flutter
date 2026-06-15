@@ -65,7 +65,9 @@ export 'src/_goldens_io.dart' if (dart.library.js_interop) 'src/_goldens_web.dar
 export 'src/_matchers_io.dart' if (dart.library.js_interop) 'src/_matchers_web.dart';
 export 'src/_test_selector_io.dart' if (dart.library.js_interop) 'src/_test_selector_web.dart';
 export 'src/accessibility.dart';
+export 'src/animation_matchers.dart';
 export 'src/animation_sheet.dart';
+export 'src/animation_tracker.dart';
 export 'src/binding.dart';
 export 'src/controller.dart';
 export 'src/deprecated.dart';
