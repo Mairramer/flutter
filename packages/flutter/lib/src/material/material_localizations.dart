@@ -343,13 +343,16 @@ abstract class MaterialLocalizations {
   /// The list begins with the value corresponding to Sunday and ends with
   /// Saturday. Use [firstDayOfWeekIndex] to find the first day of week in this
   /// list.
-  ///
-  /// Examples:
-  ///
   /// - US English: S, M, T, W, T, F, S
   /// - Russian: вс, пн, вт, ср, чт, пт, сб - notice that the list begins with
   ///   вс (Sunday) even though the first day of week for Russian is Monday.
   List<String> get narrowWeekdays;
+
+  /// The month names of the Jalali calendar system.
+  ///
+  /// This list contains 12 elements. For example, for US English, it would
+  /// contain strings like 'Farvardin', 'Ordibehesht', etc.
+  List<String> get jalaliMonths;
 
   /// Index of the first day of week, where 0 points to Sunday, and 6 points to
   /// Saturday.
@@ -775,6 +778,11 @@ class DefaultMaterialLocalizations implements MaterialLocalizations {
 
   static const List<String> _narrowWeekdays = <String>['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
+  static const List<String> _jalaliMonths = <String>[
+    'Farvardin', 'Ordibehesht', 'Khordad', 'Tir', 'Mordad', 'Shahrivar',
+    'Mehr', 'Aban', 'Azar', 'Dey', 'Bahman', 'Esfand',
+  ];
+
   static const List<String> _shortMonths = <String>[
     'Jan',
     'Feb',
@@ -936,6 +944,9 @@ class DefaultMaterialLocalizations implements MaterialLocalizations {
 
   @override
   List<String> get narrowWeekdays => _narrowWeekdays;
+
+  @override
+  List<String> get jalaliMonths => _jalaliMonths;
 
   @override
   int get firstDayOfWeekIndex => 0; // narrowWeekdays[0] is 'S' for Sunday

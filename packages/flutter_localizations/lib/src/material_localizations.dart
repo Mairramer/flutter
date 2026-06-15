@@ -193,6 +193,44 @@ abstract class GlobalMaterialLocalizations implements MaterialLocalizations {
     return _longDateFormat.dateSymbols.NARROWWEEKDAYS;
   }
 
+  static const List<String> _farsiJalaliMonths = <String>[
+    'فروردین',
+    'اردیبهشت',
+    'خرداد',
+    'تیر',
+    'مرداد',
+    'شهریور',
+    'مهر',
+    'آبان',
+    'آذر',
+    'دی',
+    'بهمن',
+    'اسفند',
+  ];
+
+  static const List<String> _englishJalaliMonths = <String>[
+    'Farvardin',
+    'Ordibehesht',
+    'Khordad',
+    'Tir',
+    'Mordad',
+    'Shahrivar',
+    'Mehr',
+    'Aban',
+    'Azar',
+    'Dey',
+    'Bahman',
+    'Esfand',
+  ];
+
+  @override
+  List<String> get jalaliMonths {
+    // If the first Jalali month starts with the Farsi letter 'ف', we assume a Farsi locale.
+    // This is a simple heuristic that works for both 'fa' and 'fa_IR' locales.
+    // This is not the best way to determine the locale, but it is the simplest.
+    return _localeName.startsWith('fa') ? _farsiJalaliMonths : _englishJalaliMonths;
+  }
+
   @override
   int get firstDayOfWeekIndex => (_longDateFormat.dateSymbols.FIRSTDAYOFWEEK + 1) % 7;
 
