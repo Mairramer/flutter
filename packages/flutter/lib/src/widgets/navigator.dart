@@ -3757,6 +3757,7 @@ class NavigatorState extends State<Navigator> with TickerProviderStateMixin, Res
   final Set<_RouteEntry> _entryWaitingForSubTreeDisposal = <_RouteEntry>{};
   final _HistoryProperty _serializableHistory = _HistoryProperty();
   final Queue<_NavigatorObservation> _observedRouteAdditions = Queue<_NavigatorObservation>();
+  bool _isFlushingObserverNotifications = false;
   final Queue<_NavigatorObservation> _observedRouteDeletions = Queue<_NavigatorObservation>();
 
   /// The [FocusNode] for the [Focus] that encloses the routes.
@@ -4624,14 +4625,38 @@ class NavigatorState extends State<Navigator> with TickerProviderStateMixin, Res
       _observedRouteAdditions.clear();
       return;
     }
-    while (_observedRouteAdditions.isNotEmpty) {
-      final _NavigatorObservation observation = _observedRouteAdditions.removeLast();
-      _effectiveObservers.forEach(observation.notify);
+
+    if (_isFlushingObserverNotifications) {
+      return;
     }
 
-    while (_observedRouteDeletions.isNotEmpty) {
-      final _NavigatorObservation observation = _observedRouteDeletions.removeFirst();
-      _effectiveObservers.forEach(observation.notify);
+    bool? wasLocked;
+    assert(() {
+      wasLocked = _debugLocked;
+      _debugLocked = false;
+      return true;
+    }());
+    final bool wasFlushing = _flushingHistory;
+    _flushingHistory = false;
+    _isFlushingObserverNotifications = true;
+
+    try {
+      while (_observedRouteAdditions.isNotEmpty || _observedRouteDeletions.isNotEmpty) {
+        final _NavigatorObservation observation = _observedRouteAdditions.isNotEmpty
+            ? _observedRouteAdditions.removeLast()
+            : _observedRouteDeletions.removeFirst();
+
+        for (final NavigatorObserver observer in _effectiveObservers) {
+          observation.notify(observer);
+        }
+      }
+    } finally {
+      _isFlushingObserverNotifications = false;
+      _flushingHistory = wasFlushing;
+      assert(() {
+        _debugLocked = wasLocked!;
+        return true;
+      }());
     }
   }
 

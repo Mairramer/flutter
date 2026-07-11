@@ -742,6 +742,50 @@ void main() {
     expect(isPopped, isTrue);
   });
 
+  testWidgets('showModalBottomSheet inside RouteObserver.didPop', (WidgetTester tester) async {
+    final _ModalBottomSheetRouteObserver observer = _ModalBottomSheetRouteObserver();
+
+    await tester.pumpWidget(MaterialApp(
+      navigatorObservers: <NavigatorObserver>[observer],
+      home: Scaffold(
+        body: Builder(
+          builder: (BuildContext context) {
+            return ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).push(MaterialPageRoute<void>(
+                  builder: (BuildContext context) => Scaffold(
+                    appBar: AppBar(title: const Text('Page 2')),
+                    body: ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text('Pop'),
+                    ),
+                  ),
+                ));
+              },
+              child: const Text('Push'),
+            );
+          },
+        ),
+      ),
+    ));
+
+    // Push Page 2
+    await tester.tap(find.text('Push'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Page 2'), findsOneWidget);
+
+    // Pop Page 2
+    await tester.tap(find.text('Pop'));
+    
+    // This should trigger didPop and push the bottom sheet.
+    await tester.pumpAndSettle();
+
+    expect(find.text('Bottom Sheet'), findsOneWidget);
+  });
+
   testWidgets('Add and remove an observer should work', (WidgetTester tester) async {
     final routes = <String, WidgetBuilder>{
       '/': (BuildContext context) => OnTapPage(
@@ -6849,5 +6893,19 @@ class _NestedNavigatorsPageState extends State<_NestedNavigatorsPage> {
         },
       ),
     );
+  }
+}
+
+class _ModalBottomSheetRouteObserver extends RouteObserver<PageRoute<dynamic>> {
+  @override
+  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    super.didPop(route, previousRoute);
+    if (previousRoute != null && previousRoute.navigator != null) {
+      // Trying to push a route (like a bottom sheet) inside didPop
+      showModalBottomSheet<void>(
+        context: previousRoute.navigator!.context,
+        builder: (BuildContext context) => const Text('Bottom Sheet'),
+      );
+    }
   }
 }
