@@ -1510,8 +1510,10 @@ class AnimatedScale extends ImplicitlyAnimatedWidget {
   /// The alignment of the origin of the coordinate system in which the scale
   /// takes place, relative to the size of the box.
   ///
-  /// For example, to set the origin of the scale to bottom middle, you can use
-  /// an alignment of (0.0, 1.0).
+  /// For example, to set the origin of the scale to bottom center, you can use
+  /// an alignment of [Alignment.bottomCenter].
+  ///
+  /// Defaults to [Alignment.center].
   final AlignmentGeometry alignment;
 
   /// The filter quality with which to apply the transform as a bitmap operation.
@@ -1643,8 +1645,10 @@ class AnimatedRotation extends ImplicitlyAnimatedWidget {
   /// The alignment of the origin of the coordinate system in which the rotation
   /// takes place, relative to the size of the box.
   ///
-  /// For example, to set the origin of the rotation to bottom middle, you can use
-  /// an alignment of (0.0, 1.0).
+  /// For example, to set the origin of the rotation to bottom center, you can use
+  /// an alignment of [Alignment.bottomCenter].
+  ///
+  /// Defaults to [Alignment.center].
   final AlignmentGeometry alignment;
 
   /// The filter quality with which to apply the transform as a bitmap operation.
