@@ -809,6 +809,50 @@ void main() {
     );
     expect(tester.getSize(find.byType(SlideTransition)), Size.zero);
   });
+
+  testWidgets('AnimatedScale resolves AlignmentDirectional and transforms correctly', (WidgetTester tester) async {
+    const Key targetKey = Key('target');
+    await tester.pumpWidget(
+      const Directionality(
+        textDirection: TextDirection.rtl,
+        child: Align(
+          alignment: Alignment.topLeft,
+          child: AnimatedScale(
+            scale: 2.0,
+            duration: Duration(milliseconds: 100),
+            alignment: AlignmentDirectional.topStart,
+            child: SizedBox(key: targetKey, width: 100.0, height: 100.0),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.getTopLeft(find.byKey(targetKey)), const Offset(-100.0, 0.0));
+    expect(tester.getBottomRight(find.byKey(targetKey)), const Offset(100.0, 200.0));
+  });
+
+  testWidgets('AnimatedRotation resolves AlignmentDirectional and transforms correctly', (WidgetTester tester) async {
+    const Key targetKey = Key('target');
+    await tester.pumpWidget(
+      const Directionality(
+        textDirection: TextDirection.rtl,
+        child: Align(
+          alignment: Alignment.topLeft,
+          child: AnimatedRotation(
+            turns: 0.25,
+            duration: Duration(milliseconds: 100),
+            alignment: AlignmentDirectional.topStart,
+            child: SizedBox(key: targetKey, width: 100.0, height: 100.0),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.getTopLeft(find.byKey(targetKey)), offsetMoreOrLessEquals(const Offset(100.0, -100.0)));
+    expect(tester.getBottomRight(find.byKey(targetKey)), offsetMoreOrLessEquals(Offset.zero));
+  });
 }
 
 Future<void> tapTest2and3(

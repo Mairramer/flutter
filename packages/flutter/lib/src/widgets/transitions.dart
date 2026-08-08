@@ -297,7 +297,7 @@ class MatrixTransition extends AnimatedWidget {
   ///
   /// For example, to set the origin of the transform to bottom middle, you can
   /// use an alignment of (0.0, 1.0).
-  final Alignment alignment;
+  final AlignmentGeometry alignment;
 
   /// The filter quality with which to apply the transform as a bitmap operation.
   ///

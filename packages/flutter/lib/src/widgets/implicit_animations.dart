@@ -1512,7 +1512,7 @@ class AnimatedScale extends ImplicitlyAnimatedWidget {
   ///
   /// For example, to set the origin of the scale to bottom middle, you can use
   /// an alignment of (0.0, 1.0).
-  final Alignment alignment;
+  final AlignmentGeometry alignment;
 
   /// The filter quality with which to apply the transform as a bitmap operation.
   ///
@@ -1527,7 +1527,11 @@ class AnimatedScale extends ImplicitlyAnimatedWidget {
     super.debugFillProperties(properties);
     properties.add(DoubleProperty('scale', scale));
     properties.add(
-      DiagnosticsProperty<Alignment>('alignment', alignment, defaultValue: Alignment.center),
+      DiagnosticsProperty<AlignmentGeometry>(
+        'alignment',
+        alignment,
+        defaultValue: Alignment.center,
+      ),
     );
     properties.add(EnumProperty<FilterQuality>('filterQuality', filterQuality, defaultValue: null));
   }
@@ -1641,7 +1645,7 @@ class AnimatedRotation extends ImplicitlyAnimatedWidget {
   ///
   /// For example, to set the origin of the rotation to bottom middle, you can use
   /// an alignment of (0.0, 1.0).
-  final Alignment alignment;
+  final AlignmentGeometry alignment;
 
   /// The filter quality with which to apply the transform as a bitmap operation.
   ///
@@ -1656,7 +1660,11 @@ class AnimatedRotation extends ImplicitlyAnimatedWidget {
     super.debugFillProperties(properties);
     properties.add(DoubleProperty('turns', turns));
     properties.add(
-      DiagnosticsProperty<Alignment>('alignment', alignment, defaultValue: Alignment.center),
+      DiagnosticsProperty<AlignmentGeometry>(
+        'alignment',
+        alignment,
+        defaultValue: Alignment.center,
+      ),
     );
     properties.add(EnumProperty<FilterQuality>('filterQuality', filterQuality, defaultValue: null));
   }
