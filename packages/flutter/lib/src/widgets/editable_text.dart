@@ -4256,13 +4256,19 @@ class EditableTextState extends State<EditableText>
   }
 
   void _updateOrDisposeSelectionOverlayIfNeeded() {
-    if (_selectionOverlay != null) {
-      if (_hasFocus) {
-        _selectionOverlay!.update(_value);
-      } else {
-        _selectionOverlay!.dispose();
-        _selectionOverlay = null;
+    if (_hasFocus) {
+      if (widget.selectionControls != null || widget.contextMenuBuilder != null) {
+        if (_selectionOverlay == null) {
+          _selectionOverlay = _createSelectionOverlay();
+          _selectionOverlay!.handlesVisible = widget.showSelectionHandles;
+          _selectionOverlay!.showHandles();
+        } else {
+          _selectionOverlay!.update(_value);
+        }
       }
+    } else {
+      _selectionOverlay?.dispose();
+      _selectionOverlay = null;
     }
   }
 
@@ -4524,7 +4530,7 @@ class EditableTextState extends State<EditableText>
     if (widget.selectionControls == null && widget.contextMenuBuilder == null) {
       _selectionOverlay?.dispose();
       _selectionOverlay = null;
-    } else {
+    } else if (_hasFocus) {
       if (_selectionOverlay == null) {
         _selectionOverlay = _createSelectionOverlay();
       } else {

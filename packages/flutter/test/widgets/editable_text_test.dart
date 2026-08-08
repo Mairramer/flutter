@@ -18869,6 +18869,41 @@ void main() {
     // [intended] only applies to platforms where we supply the context menu.
     skip: kIsWeb,
   );
+
+  testWidgets('EditableText does not populate selection overlay when not focused', (WidgetTester tester) async {
+    final TextEditingController controller = TextEditingController();
+    final FocusNode focusNode = FocusNode();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: EditableText(
+          backgroundCursorColor: Colors.grey,
+          controller: controller,
+          focusNode: focusNode,
+          style: textStyle,
+          cursorColor: cursorColor,
+          selectionControls: materialTextSelectionControls,
+        ),
+      ),
+    );
+
+    final EditableTextState state = tester.state<EditableTextState>(find.byType(EditableText));
+
+    // Simulate an external change (e.g. autofill) without focusing.
+    controller.value = const TextEditingValue(
+      text: 'Autofilled text',
+      selection: TextSelection.collapsed(offset: 15),
+    );
+    await tester.pump();
+
+    // Verify it does not have focus.
+    expect(state.widget.focusNode.hasFocus, false);
+    // Since it doesn't have focus, the selection overlay should not be created.
+    // showToolbar returns false when _selectionOverlay is null.
+    expect(state.showToolbar(), false);
+
+    focusNode.dispose();
+  });
 }
 
 class UnsettableController extends TextEditingController {
