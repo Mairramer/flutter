@@ -47,6 +47,7 @@ class BottomSheetThemeData with Diagnosticable {
     this.dragHandleSize,
     this.clipBehavior,
     this.constraints,
+    this.sheetOffset,
   });
 
   /// Overrides the default value for [BottomSheet.backgroundColor].
@@ -108,6 +109,11 @@ class BottomSheetThemeData with Diagnosticable {
   /// If null, the bottom sheet's size will be unconstrained.
   final BoxConstraints? constraints;
 
+  /// The offset of the [BottomSheet] from the bottom of the screen.
+  ///
+  /// If null, [BottomSheet] defaults to 0.0.
+  final double? sheetOffset;
+
   /// Creates a copy of this object with the given fields replaced with the
   /// new values.
   BottomSheetThemeData copyWith({
@@ -124,6 +130,7 @@ class BottomSheetThemeData with Diagnosticable {
     Size? dragHandleSize,
     Clip? clipBehavior,
     BoxConstraints? constraints,
+    double? sheetOffset,
   }) {
     return BottomSheetThemeData(
       backgroundColor: backgroundColor ?? this.backgroundColor,
@@ -139,6 +146,7 @@ class BottomSheetThemeData with Diagnosticable {
       dragHandleSize: dragHandleSize ?? this.dragHandleSize,
       clipBehavior: clipBehavior ?? this.clipBehavior,
       constraints: constraints ?? this.constraints,
+      sheetOffset: sheetOffset ?? this.sheetOffset,
     );
   }
 
@@ -165,6 +173,7 @@ class BottomSheetThemeData with Diagnosticable {
       dragHandleSize: Size.lerp(a?.dragHandleSize, b?.dragHandleSize, t),
       clipBehavior: t < 0.5 ? a?.clipBehavior : b?.clipBehavior,
       constraints: BoxConstraints.lerp(a?.constraints, b?.constraints, t),
+      sheetOffset: lerpDouble(a?.sheetOffset, b?.sheetOffset, t),
     );
   }
 
@@ -183,6 +192,7 @@ class BottomSheetThemeData with Diagnosticable {
     dragHandleSize,
     clipBehavior,
     constraints,
+    sheetOffset,
   );
 
   @override
@@ -206,7 +216,8 @@ class BottomSheetThemeData with Diagnosticable {
         other.dragHandleColor == dragHandleColor &&
         other.dragHandleSize == dragHandleSize &&
         other.clipBehavior == clipBehavior &&
-        other.constraints == constraints;
+        other.constraints == constraints &&
+        other.sheetOffset == sheetOffset;
   }
 
   @override
@@ -227,5 +238,6 @@ class BottomSheetThemeData with Diagnosticable {
     properties.add(
       DiagnosticsProperty<BoxConstraints>('constraints', constraints, defaultValue: null),
     );
+    properties.add(DoubleProperty('sheetOffset', sheetOffset, defaultValue: null));
   }
 }

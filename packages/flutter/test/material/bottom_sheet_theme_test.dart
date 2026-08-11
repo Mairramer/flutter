@@ -34,6 +34,7 @@ void main() {
     expect(bottomSheetTheme.constraints, null);
     expect(bottomSheetTheme.dragHandleColor, null);
     expect(bottomSheetTheme.dragHandleSize, null);
+    expect(bottomSheetTheme.sheetOffset, null);
   });
 
   testWidgets('Default BottomSheetThemeData debugFillProperties', (WidgetTester tester) async {
@@ -59,6 +60,7 @@ void main() {
       constraints: BoxConstraints(minWidth: 200, maxWidth: 640),
       dragHandleColor: Color(0xFFFFFFFF),
       dragHandleSize: Size(20, 20),
+      sheetOffset: 20.0,
     ).debugFillProperties(builder);
 
     final List<String> description = builder.properties
@@ -75,6 +77,7 @@ void main() {
       'dragHandleSize: Size(20.0, 20.0)',
       'clipBehavior: Clip.antiAlias',
       'constraints: BoxConstraints(200.0<=w<=640.0, 0.0<=h<=Infinity)',
+      'sheetOffset: 20.0',
     ]);
   });
 

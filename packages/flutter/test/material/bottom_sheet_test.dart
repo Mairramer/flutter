@@ -3260,6 +3260,80 @@ void main() {
     // animation continues from the current visual offset.
     expect(yAfterUp, closeTo(yBeforeUp, 0.1));
   });
+
+  testWidgets('BottomSheet can have a sheetOffset', (WidgetTester tester) async {
+    const sheetOffset = 40.0;
+    final scaffoldKey = GlobalKey<ScaffoldState>();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          key: scaffoldKey,
+          body: const Center(child: Text('body')),
+        ),
+      ),
+    );
+
+    scaffoldKey.currentState!.showBottomSheet(
+      (BuildContext context) => const SizedBox(height: 200, child: Text('BottomSheet')),
+      sheetOffset: sheetOffset,
+    );
+
+    await tester.pumpAndSettle();
+
+    final Finder materialFinder = find.descendant(
+      of: find.byType(BottomSheet),
+      matching: find.byType(Material),
+    );
+    expect(materialFinder, findsOneWidget);
+
+    // BottomSheet contains a Padding that offsets its child (Material) from the bottom.
+    // We check that the bottom edge of the Material is exactly 'sheetOffset' away from the bottom of the screen.
+    final Rect materialRect = tester.getRect(materialFinder);
+    final Size screenSize = tester.getSize(find.byType(Scaffold));
+
+    expect(screenSize.height - materialRect.bottom, sheetOffset);
+  });
+
+  testWidgets('ModalBottomSheet can have a sheetOffset', (WidgetTester tester) async {
+    const sheetOffset = 40.0;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Builder(
+            builder: (BuildContext context) {
+              return ElevatedButton(
+                onPressed: () {
+                  showModalBottomSheet<void>(
+                    context: context,
+                    sheetOffset: sheetOffset,
+                    builder: (BuildContext context) =>
+                        const SizedBox(height: 200, child: Text('BottomSheet')),
+                  );
+                },
+                child: const Text('Show'),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Show'));
+    await tester.pumpAndSettle();
+
+    final Finder materialFinder = find.descendant(
+      of: find.byType(BottomSheet),
+      matching: find.byType(Material),
+    );
+    expect(materialFinder, findsOneWidget);
+
+    final Rect materialRect = tester.getRect(materialFinder);
+    final Size screenSize = tester.getSize(find.byType(Scaffold));
+
+    expect(screenSize.height - materialRect.bottom, sheetOffset);
+  });
 }
 
 class _TestPage extends StatelessWidget {

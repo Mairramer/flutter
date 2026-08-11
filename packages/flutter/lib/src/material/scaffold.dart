@@ -2463,6 +2463,7 @@ class ScaffoldState extends State<Scaffold>
     bool? enableDrag,
     bool? showDragHandle,
     bool shouldDisposeAnimationController = true,
+    double? sheetOffset,
   }) {
     assert(() {
       if (widget.bottomSheet != null && isPersistent && _currentBottomSheet != null) {
@@ -2567,6 +2568,7 @@ class ScaffoldState extends State<Scaffold>
       shape: shape,
       clipBehavior: clipBehavior,
       constraints: constraints,
+      sheetOffset: sheetOffset,
     );
 
     if (!isPersistent) {
@@ -2665,6 +2667,7 @@ class ScaffoldState extends State<Scaffold>
     bool? showDragHandle,
     AnimationController? transitionAnimationController,
     AnimationStyle? sheetAnimationStyle,
+    double? sheetOffset,
   }) {
     assert(() {
       if (widget.bottomSheet != null) {
@@ -2696,6 +2699,7 @@ class ScaffoldState extends State<Scaffold>
         enableDrag: enableDrag,
         showDragHandle: showDragHandle,
         shouldDisposeAnimationController: transitionAnimationController == null,
+        sheetOffset: sheetOffset,
       );
     });
     return _currentBottomSheet!;
@@ -3323,6 +3327,7 @@ class _StandardBottomSheet extends StatefulWidget {
     this.clipBehavior,
     this.constraints,
     this.onDispose,
+    this.sheetOffset,
   });
 
   final AnimationController
@@ -3339,6 +3344,7 @@ class _StandardBottomSheet extends StatefulWidget {
   final ShapeBorder? shape;
   final Clip? clipBehavior;
   final BoxConstraints? constraints;
+  final double? sheetOffset;
 
   @override
   _StandardBottomSheetState createState() => _StandardBottomSheetState();
@@ -3439,6 +3445,7 @@ class _StandardBottomSheetState extends State<_StandardBottomSheet> {
             shape: widget.shape,
             clipBehavior: widget.clipBehavior,
             constraints: widget.constraints,
+            sheetOffset: widget.sheetOffset,
           ),
         ),
       ),

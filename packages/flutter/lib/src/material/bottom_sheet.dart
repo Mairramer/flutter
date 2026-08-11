@@ -93,6 +93,7 @@ class BottomSheet extends StatefulWidget {
     this.shape,
     this.clipBehavior,
     this.constraints,
+    this.sheetOffset,
     required this.onClosing,
     required this.builder,
   }) : assert(elevation == null || elevation >= 0.0);
@@ -232,6 +233,13 @@ class BottomSheet extends StatefulWidget {
   /// the available space. Otherwise, no alignment is applied.
   final BoxConstraints? constraints;
 
+  /// The offset from the bottom of the screen.
+  ///
+  /// If null, then the ambient [ThemeData.bottomSheetTheme]'s
+  /// [BottomSheetThemeData.sheetOffset] will be used. If that
+  /// is also null, then the default is 0.0.
+  final double? sheetOffset;
+
   @override
   State<BottomSheet> createState() => _BottomSheetState();
 
@@ -361,6 +369,7 @@ class _BottomSheetState extends State<BottomSheet> {
     final Clip clipBehavior = widget.clipBehavior ?? bottomSheetTheme.clipBehavior ?? Clip.none;
     final bool showDragHandle =
         widget.showDragHandle ?? (widget.enableDrag && (bottomSheetTheme.showDragHandle ?? false));
+    final double sheetOffset = widget.sheetOffset ?? bottomSheetTheme.sheetOffset ?? 0.0;
 
     Widget? dragHandle;
     if (showDragHandle) {
@@ -414,6 +423,13 @@ class _BottomSheetState extends State<BottomSheet> {
         alignment: Alignment.bottomCenter,
         heightFactor: 1.0,
         child: ConstrainedBox(constraints: constraints, child: bottomSheet),
+      );
+    }
+
+    if (sheetOffset > 0) {
+      bottomSheet = Padding(
+        padding: EdgeInsets.only(bottom: sheetOffset),
+        child: bottomSheet,
       );
     }
 
@@ -777,6 +793,7 @@ class _ModalBottomSheetState<T> extends State<_ModalBottomSheet<T>> {
         shape: widget.shape,
         clipBehavior: widget.clipBehavior,
         constraints: widget.constraints,
+        sheetOffset: widget.route.sheetOffset,
         enableDrag: widget.enableDrag,
         showDragHandle: widget.showDragHandle,
         onDragStart: handleDragStart,
@@ -891,6 +908,7 @@ class ModalBottomSheetRoute<T> extends PopupRoute<T> {
     this.anchorPoint,
     this.useSafeArea = false,
     this.sheetAnimationStyle,
+    this.sheetOffset,
   });
 
   /// A builder for the contents of the sheet.
@@ -1048,8 +1066,15 @@ class ModalBottomSheetRoute<T> extends PopupRoute<T> {
   /// override the modal bottom sheet reverse animation duration in the
   /// underlying [BottomSheet.createAnimationController].
   ///
-  /// To disable the modal bottom sheet animation, use [AnimationStyle.noAnimation].
+  /// To disable the bottom sheet animation, use [AnimationStyle.noAnimation].
   final AnimationStyle? sheetAnimationStyle;
+
+  /// The offset from the bottom of the screen.
+  ///
+  /// If null, then the ambient [ThemeData.bottomSheetTheme]'s
+  /// [BottomSheetThemeData.sheetOffset] will be used. If that
+  /// is also null, then the default is 0.0.
+  final double? sheetOffset;
 
   /// {@template flutter.material.ModalBottomSheetRoute.barrierOnTapHint}
   /// The semantic hint text that informs users what will happen if they
@@ -1307,6 +1332,7 @@ Future<T?> showModalBottomSheet<T>({
   AnimationController? transitionAnimationController,
   Offset? anchorPoint,
   AnimationStyle? sheetAnimationStyle,
+  double? sheetOffset,
   bool? requestFocus,
 }) {
   assert(debugCheckHasMediaQuery(context));
@@ -1336,6 +1362,7 @@ Future<T?> showModalBottomSheet<T>({
       anchorPoint: anchorPoint,
       useSafeArea: useSafeArea,
       sheetAnimationStyle: sheetAnimationStyle,
+      sheetOffset: sheetOffset,
       requestFocus: requestFocus,
     ),
   );
@@ -1420,6 +1447,7 @@ PersistentBottomSheetController showBottomSheet({
   bool? showDragHandle,
   AnimationController? transitionAnimationController,
   AnimationStyle? sheetAnimationStyle,
+  double? sheetOffset,
 }) {
   assert(debugCheckHasScaffold(context));
 
@@ -1434,6 +1462,7 @@ PersistentBottomSheetController showBottomSheet({
     showDragHandle: showDragHandle,
     transitionAnimationController: transitionAnimationController,
     sheetAnimationStyle: sheetAnimationStyle,
+    sheetOffset: sheetOffset,
   );
 }
 
