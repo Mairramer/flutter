@@ -973,6 +973,7 @@ class SliverMultiBoxAdaptorElement extends RenderObjectElement
     assert(_currentlyUpdatingChildIndex == null);
     try {
       final newChildren = SplayTreeMap<int, Element?>();
+      final stronglyClaimedNewIndices = <int>{};
       final Map<int, double> indexToLayoutOffset = HashMap<int, double>();
       final adaptorWidget = widget as SliverMultiBoxAdaptorWidget;
       void processElement(int index) {
@@ -1016,18 +1017,27 @@ class SliverMultiBoxAdaptorElement extends RenderObjectElement
         }
 
         if (newIndex != null && newIndex != index) {
-          // The layout offset of the child being moved is no longer accurate.
-          if (childParentData != null) {
-            childParentData.layoutOffset = null;
-          }
+          if (stronglyClaimedNewIndices.contains(newIndex)) {
+            // Multiple elements strongly claim the same newIndex. This happens when there are duplicate keys,
+            // or findChildIndexCallback returns the same index for multiple keys.
+            // We cannot move this element to newIndex, because it's already taken by another moved element.
+            // Leave it at its old index.
+            newChildren.putIfAbsent(index, () => _childElements[index]);
+          } else {
+            // The layout offset of the child being moved is no longer accurate.
+            if (childParentData != null) {
+              childParentData.layoutOffset = null;
+            }
 
-          newChildren[newIndex] = _childElements[index];
-          if (_replaceMovedChildren) {
-            // We need to make sure the original index gets processed.
-            newChildren.putIfAbsent(index, () => null);
+            stronglyClaimedNewIndices.add(newIndex);
+            newChildren[newIndex] = _childElements[index];
+            if (_replaceMovedChildren) {
+              // We need to make sure the original index gets processed.
+              newChildren.putIfAbsent(index, () => null);
+            }
+            // We do not want the remapped child to get deactivated during processElement.
+            _childElements.remove(index);
           }
-          // We do not want the remapped child to get deactivated during processElement.
-          _childElements.remove(index);
         } else {
           newChildren.putIfAbsent(index, () => _childElements[index]);
         }
